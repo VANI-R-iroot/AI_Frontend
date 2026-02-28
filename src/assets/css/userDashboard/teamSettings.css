@@ -1,0 +1,59 @@
+.team-settings-page .card {
+  background: var(--bg-02);
+  border: var(--border-color);
+  color: var(--text-color);
+}
+
+.team-settings-page h3,
+.team-settings-page h5,
+.team-settings-page th,
+.team-settings-page td,
+.team-settings-page label,
+.team-settings-page li,
+.team-settings-page strong,
+.team-settings-page span {
+  color: var(--text-color);
+}
+
+.team-settings-page .table {
+  color: var(--text-color);
+}
+
+.team-settings-page .form-control,
+.team-settings-page .form-select {
+  background: var(--bg-02);
+  border: var(--border-color);
+  color: var(--text-color);
+}
+
+.team-settings-page .form-control::placeholder {
+  color: #94a3b8;
+}
+
+.team-settings-page .btn-primary {
+  background: var(--button-color);
+  border: none;
+  color: #ffffff;
+}
+
+.team-settings-page .btn-primary:hover {
+  filter: brightness(1.05);
+}
+
+.team-settings-page .btn-outline-primary {
+  border: 1px solid #5d3bf5;
+  color: #e6f0ff;
+  background: transparent;
+}
+
+.team-settings-page .btn-outline-danger {
+  border: 1px solid #dc3545;
+  color: #ffb3b3;
+  background: transparent;
+}
+
+.team-settings-page .alert {
+  background: rgba(255, 99, 71, 0.12);
+  border: 1px solid rgba(255, 99, 71, 0.4);
+  color: #ffd6d0;
+}

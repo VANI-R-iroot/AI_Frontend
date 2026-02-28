@@ -1,0 +1,447 @@
+.plugin-user-left-section,
+.plugin-user-right-section {
+  border: var(--border-color);
+  background: var(--bg-02);
+  border-radius: 12px;
+  padding: 30px;
+}
+
+.plugin-card-active-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  border: var(--border-color);
+  border-radius: 12px;
+  background: var(--bg-02);
+  color: #22c55e;
+  font-size: 14px;
+  font-weight: 500;
+}
+.plugin-btn-group {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin-top: 1rem;
+}
+
+.plugin-card-active-badge span {
+  font-size: 12px;
+  font-weight: 400;
+  padding: 15px;
+}
+.plugin-setup-progress-container {
+  width: 100%;
+  margin: 40px auto;
+  padding: 20px;
+  background: var(--bg-02);
+  border-radius: 12px;
+  border: var(--border-color);
+}
+
+.plugin-setup-progress-stepper {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  position: relative;
+  padding: 20px 0;
+}
+
+.plugin-setup-progress-step-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  flex: 1;
+}
+
+.plugin-step-circle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  z-index: 2;
+  transition: all 0.3s ease;
+}
+
+.plugin-step-circle.Download {
+  background-color: #22c55e;
+  border: 2px solid #22c55e;
+}
+
+.plugin-step-circle.Trained {
+  background-color: #3b82f6;
+  border: 2px solid #3b82f6;
+}
+
+.plugin-step-circle.Publish {
+  background-color: #d1d5db;
+  border: 2px solid #d1d5db;
+}
+
+.plugin-step-check-icon {
+  width: 16px;
+  height: 16px;
+}
+
+.plugin-step-connecting-line {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  right: -50%;
+  height: 2px;
+  background-color: #e5e7eb;
+  z-index: 1;
+  transition: all 0.3s ease;
+}
+
+.plugin-step-connecting-line.active {
+  background-color: #22c55e;
+}
+
+.plugin-setup-progress-step-wrapper:last-child .plugin-step-connecting-line {
+  display: none;
+}
+
+.plugin-step-info {
+  margin-top: 12px;
+  text-align: center;
+}
+
+.plugin-step-number {
+  font-size: 11px;
+  font-weight: 600;
+  color: #6b7280;
+  margin-bottom: 4px;
+  letter-spacing: 0.5px;
+}
+
+.plugin-step-title {
+  font-size: 13px;
+  font-weight: 500;
+  padding: 4px 12px;
+  border-radius: 16px;
+  transition: all 0.3s ease;
+}
+
+.plugin-step-title.Download {
+  background-color: #22c55e;
+  color: white;
+}
+
+.plugin-step-title.Trained {
+  background-color: #3b82f6;
+  color: white;
+}
+
+.plugin-step-title.Publish {
+  background-color: transparent;
+  color: #6b7280;
+}
+
+/* Responsive Design */
+@media (max-width: 640px) {
+  .plugin-step-circle {
+    width: 32px;
+    height: 32px;
+  }
+
+  .plugin-step-number {
+    font-size: 10px;
+  }
+
+  .plugin-step-title {
+    font-size: 12px;
+    padding: 3px 8px;
+  }
+
+  .plugin-step-connecting-line {
+    top: 16px;
+  }
+}
+
+/* progress round bar  */
+
+.semi-circular-progress-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-family: sans-serif;
+  background: var(--bg-02);
+  padding: 24px;
+  border-radius: 12px;
+  border: var(--border-color);
+}
+
+.progress-round-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 16px;
+}
+
+.progress-round-wrapper {
+  position: relative;
+}
+
+.progress-round-content {
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+}
+
+.progress-round-percentage {
+  font-size: 22px;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.progress-round-amount {
+  font-size: 12px;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+/* guideline page css start form here  */
+
+.ai-agent-setup-container {
+  padding: 2rem;
+  border-radius: 12px;
+  max-width: 900px;
+  margin: auto;
+  font-family: "Segoe UI", sans-serif;
+  color: #e6e6e6;
+}
+
+.guide-title {
+  font-size: 1.8rem;
+  margin-bottom: 1.5rem;
+  color: #ffffff;
+}
+
+.guide-step {
+  background: var(--bg-02);
+  padding: 1.2rem;
+  border-left: 4px solid #007bff;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.guide-step h2 {
+  margin-top: 0;
+  font-size: 1.2rem;
+  color: #0056b3;
+}
+
+.guide-step h3 {
+  margin-top: 1rem;
+  font-size: 1rem;
+  color: #914cff;
+}
+
+.guide-step ul,
+.guide-step ol {
+  margin: 0.5rem 0 0 1.2rem;
+}
+
+.guide-step code {
+  background: #eee;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+/* admin page plugin set up css  */
+
+.plugin-page-image-upload-box {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  border: 2px dashed #914cff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  overflow: hidden;
+  background: var(--bg-02);
+  background-size: cover;
+  background-position: center;
+  position: relative;
+}
+
+/* custom design widget dynamic css and ai-bot-widget-preview-section */
+.widget-customize-full-section {
+  background: var(--bg-02);
+  padding: 50px;
+  border-radius: 12px;
+  border: var(--border-color);
+}
+.ai-bot-widget-preview-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.submit-button-widget-custom-color button {
+  background: var(--button-color);
+  border: none;
+  padding: 10px 30px;
+  border-radius: 12px;
+  color: #ffffff;
+}
+
+/** plugin visitor tracking analyzing pag css start form here */
+
+.plugin-analyzing-chart-container {
+  margin: 20px auto;
+  padding: 20px;
+  font-family: Arial, sans-serif;
+  background: var(--bg-02);
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  border: var(--border-color);
+}
+
+.plugin-analyzing-chart-title {
+  text-align: center;
+  margin-bottom: 30px;
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: normal;
+}
+
+.plugin-analyzing-chart-content {
+  position: relative;
+}
+
+.plugin-analyzing-y-axis-label {
+  position: absolute;
+  left: -50px;
+  top: 50%;
+  transform: rotate(-90deg) translateX(50%);
+  transform-origin: center;
+  font-size: 12px;
+  color: #ffffff;
+  white-space: nowrap;
+  text-align: center;
+}
+
+.plugin-analyzing-chart-bars {
+  margin-left: 20px;
+  margin-right: 20px;
+}
+
+.plugin-analyzing-bar-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+  height: 35px;
+}
+
+.plugin-analyzing-bar-label {
+  width: 300px;
+  text-align: right;
+  padding-right: 10px;
+  font-size: 12px;
+  color: #ffffff;
+  border: none;
+  background: transparent;
+  outline: none;
+}
+
+.plugin-analyzing-bar-container {
+  flex: 1;
+  height: 25px;
+  background: #f0f0f02c;
+  position: relative;
+  margin: 0 10px;
+  border-radius: 2px;
+}
+
+.plugin-analyzing-bar {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.3s ease;
+  position: relative;
+}
+
+.plugin-analyzing-bar-percentage {
+  width: 60px;
+  text-align: left;
+  padding-left: 5px;
+  font-size: 12px;
+  color: #ffffff;
+  border: none;
+  background: transparent;
+  outline: none;
+}
+
+.plugin-analyzing-x-axis {
+  display: flex;
+  justify-content: space-between;
+  margin: 10px 430px 0 330px;
+  font-size: 11px;
+  color: #ffffff;
+}
+.plugin-analyzing-x-axis-label {
+  text-align: center;
+  margin-top: 5px;
+  font-size: 12px;
+  color: #ffffff;
+}
+
+/* Base layout (Desktop default) */
+.plugin-header-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  gap: 1rem;
+}
+
+.plugin-toggle-section {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.cancel-admin-dashboard-button-global button {
+  padding: 0.5rem 1rem;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+@media (max-width: 768px) {
+  .plugin-user-left-section,
+  .plugin-user-right-section {
+    margin-bottom: 30px;
+  }
+  .ai-bot-widget-preview-section {
+    padding-top: 40px;
+  }
+  .plugin-header-container {
+    display: block;
+  }
+
+  .cancel-admin-dashboard-button-global {
+    margin-bottom: 1rem;
+  }
+
+  .cancel-admin-dashboard-button-global button {
+    width: 100%;
+    display: block;
+  }
+
+  .plugin-toggle-section {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+  }
+}

@@ -1,0 +1,132 @@
+/* admin project stetting page  */
+
+.admin-card-item {
+  flex: 1;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  background: var(--bg-02);
+  position: relative;
+  border: 2px solid transparent;
+  border: 1.13px solid;
+  border: var(--border-color);
+  cursor: pointer;
+}
+
+.admin-card-item img {
+  width: 100px;
+  height: 100px;
+}
+.admin-card-item h3 {
+  font-family: Poppins;
+  font-weight: 500;
+  font-size: 20px;
+
+  letter-spacing: 0%;
+  padding-top: 40px;
+}
+.admin-card-item p {
+  font-family: Poppins;
+  font-weight: 400;
+  font-size: 16px;
+
+  letter-spacing: 0%;
+}
+
+/* admin media page start form here css  */
+
+.admin-dashboard-media-icon-cell {
+  width: 40px;
+  height: 40px;
+  background: #004ffa9c;
+  border: var(--border-color);
+  padding: 8px;
+  border-radius: 8px;
+}
+.admin-media-page-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.829);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+.admin-media-page-modal-content {
+  background: var(--background-color);
+  border: var(--border-color);
+  color: rgba(255, 253, 253, 0.815);
+  padding: 40px;
+  width: 500px;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+}
+.admin-media-page-modal-content label {
+  margin-top: 15px;
+  padding-bottom: 4px;
+}
+.admin-media-page-modal-content input {
+  padding: 10px 10px;
+  font-size: 16px;
+  width: 100%;
+  background: none;
+  border: var(--border-color);
+  color: #ffffff;
+}
+
+.admin-media-page-modal-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 15px;
+}
+.admin-media-page-btn-update {
+  background-color: #007bff;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+}
+
+.admin-media-page-btn-create {
+  background-color: #28a745;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+}
+
+.admin-media-cancel-button {
+  background-color: #dc3545;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 4px;
+  border: none;
+  margin-left: 10px;
+  cursor: pointer;
+}
+
+/* admin dashboard FAQ Section  */
+.cancel-admin-dashboard-button-global {
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: end;
+}
+.cancel-admin-dashboard-button-global button {
+  padding: 5px 20px;
+  border: none;
+  border-radius: 8px;
+  background-color: #dc3545;
+  color: #ffffff;
+}
+.admin-blog-publish-button {
+  width: 100%;
+}

@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AiProd</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" />
+  <link rel="icon" type="image/svg+xml" href="/chat-agent-icon.svg" />
+  <meta name="theme-color" content="#0f0f23" />
+
+</head>
+
+<body>
+  <div id="root"></div>
+  <script>
+
+    window.addEventListener('error', function (e) {
+      if (e.message && e.message.includes('indexOf')) {
+        e.preventDefault();
+        return false;
+      }
+    });
+  </script>
+  
+
+  <script>
+    (function () {
+      "use strict";
+      const host = window.location.hostname;
+      const isLocalDev =
+        host === "localhost" || host === "127.0.0.1" || host === "0.0.0.0";
+      if (isLocalDev) {
+        return;
+      }
+
+      class EnhancedUserTracker {
+        constructor() {
+          this.apiEndpoint = "https://backend.amd.ai.in/v3/handle-main-side-visitor-tracking";
+          this.cookieName = "aiprod_user_id";
+          this.sessionKey = "aiprod_session_data";
+          this.userId = null;
+          this.sessionId = null;
+          this.locationData = null;
+          this.deviceData = null;
+          this.isTracking = false;
+          this.init();
+        }
+
+        async init() {
+          try {
+            this.userId = this.getCookie(this.cookieName);
+            if (!this.userId) {
+              this.userId = this.generateUserId();
+              this.setCookie(this.cookieName, this.userId, 30);
+            }
+
+            this.sessionId = this.generateSessionId();
+            const sessionData = sessionStorage.getItem(this.sessionKey);
+
+            if (!sessionData) {
+              console.log("👤 New user session detected");
+              await this.handleNewUserSession();
+            } else {
+
+              this.trackActivity();
+            }
+          } catch (error) {
+            console.error("❌ Tracking initialization error:", error);
+          }
+        }
+
+        async handleNewUserSession() {
+          try {
+            const [locationData, deviceData] = await Promise.all([
+              this.getLocationData(),
+              this.getDeviceData(),
+            ]);
+
+            this.locationData = locationData;
+            this.deviceData = deviceData;
+            const userData = this.collectComprehensiveUserData();
+            const saved = await this.saveUserToDatabase(userData);
+
+            if (saved) {
+              sessionStorage.setItem(this.sessionKey, JSON.stringify({
+                userId: this.userId,
+                sessionId: this.sessionId,
+                timestamp: new Date().toISOString(),
+                locationData: this.locationData,
+                deviceData: this.deviceData,
+              }));
+              this.trackActivity();
+            } else {
+              console.error("❌ Failed to save user data");
+            }
+          } catch (error) {
+            console.error("❌ User session handling error:", error);
+          }
+        }
+
+        async getLocationData() {
+          try {
+
+            const services = [
+              "https://ipapi.co/json/",
+              "https://api.ipify.org?format=json"
+            ];
+
+            for (const service of services) {
+              try {
+
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 5000);
+
+                const response = await fetch(service, {
+                  method: "GET",
+                  headers: { Accept: "application/json" },
+                  signal: controller.signal
+                });
+
+                clearTimeout(timeoutId);
+
+                if (response.ok) {
+                  const data = await response.json();
+                  return {
+                    ip: data.ip || data.query || null,
+                    country: data.country || data.country_name || "Unknown",
+                    countryCode: data.country_code || data.countryCode || "UN",
+                    region: data.region || data.regionName || "Unknown",
+                    city: data.city || "Unknown",
+                    latitude: data.latitude || data.lat || null,
+                    longitude: data.longitude || data.lon || null,
+                    timezone: data.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone,
+                    isp: data.isp || data.org || "Unknown",
+                    postal: data.postal || data.zip || null,
+                  };
+                }
+              } catch (serviceError) {
+                console.warn(`⚠️ Service ${service} failed:`, serviceError);
+                continue;
+              }
+            }
+
+            return {
+              timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+              language: navigator.language || "en",
+              country: "Unknown",
+              city: "Unknown",
+            };
+          } catch (error) {
+            console.error("❌ Location data error:", error);
+            return {
+              timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+              language: navigator.language || "en",
+              country: "Unknown",
+              city: "Unknown",
+            };
+          }
+        }
+
+        async getDeviceData() {
+          try {
+            return {
+              userAgent: navigator.userAgent,
+              platform: navigator.platform,
+              language: navigator.language,
+              languages: navigator.languages,
+              cookiesEnabled: navigator.cookieEnabled,
+              onlineStatus: navigator.onLine,
+              screenWidth: screen.width,
+              screenHeight: screen.height,
+              screenResolution: `${screen.width}x${screen.height}`,
+              colorDepth: screen.colorDepth,
+              pixelDepth: screen.pixelDepth,
+              windowWidth: window.innerWidth,
+              windowHeight: window.innerHeight,
+              viewportSize: `${window.innerWidth}x${window.innerHeight}`,
+              deviceMemory: navigator.deviceMemory || null,
+              hardwareConcurrency: navigator.hardwareConcurrency || null,
+              connectionType: this.getConnectionType(),
+              connectionEffectiveType: this.getEffectiveConnectionType(),
+              deviceType: this.getDeviceType(),
+              deviceName: this.getDeviceName(),
+              operatingSystem: this.getOperatingSystem(),
+              browserName: this.getBrowserName(),
+              browserVersion: this.getBrowserVersion(),
+              touchSupport: "ontouchstart" in window,
+              maxTouchPoints: navigator.maxTouchPoints || 0,
+              timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+              timeZoneOffset: new Date().getTimezoneOffset(),
+              referrer: document.referrer || "direct",
+              localStorageSupport: this.hasLocalStorageSupport(),
+              sessionStorageSupport: this.hasSessionStorageSupport(),
+              geolocationSupport: "geolocation" in navigator,
+              notificationSupport: "Notification" in window,
+              webglSupport: this.hasWebGLSupport(),
+            };
+          } catch (error) {
+            console.error("❌ Device data collection error:", error);
+            return {
+              userAgent: navigator.userAgent,
+              platform: navigator.platform,
+              language: navigator.language,
+              screenResolution: `${screen.width}x${screen.height}`,
+              deviceType: "Unknown",
+              operatingSystem: "Unknown",
+              browserName: "Unknown",
+            };
+          }
+        }
+
+        collectComprehensiveUserData() {
+          try {
+            return {
+              userId: this.userId,
+              sessionId: this.sessionId,
+              eventType: "new_user_session",
+              timestamp: new Date().toISOString(),
+              visitCount: this.getVisitCount(),
+              isReturningUser: this.isReturningUser(),
+              url: window.location.href,
+              domain: window.location.hostname,
+              pathname: window.location.pathname,
+              title: document.title,
+              timeSpent: 0,
+              totalTimeSpent: 0,
+              isActive: true,
+              ip: this.locationData?.ip || null,
+              country: this.locationData?.country || "Unknown",
+              countryCode: this.locationData?.countryCode || "UN",
+              region: this.locationData?.region || "Unknown",
+              city: this.locationData?.city || "Unknown",
+              latitude: this.locationData?.latitude || null,
+              longitude: this.locationData?.longitude || null,
+              timezone: this.locationData?.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone,
+              isp: this.locationData?.isp || "Unknown",
+              postal: this.locationData?.postal || null,
+              userAgent: this.deviceData?.userAgent || "Unknown",
+              platform: this.deviceData?.platform || "Unknown",
+              language: this.deviceData?.language || "en",
+              cookiesEnabled: this.deviceData?.cookiesEnabled || false,
+              onlineStatus: this.deviceData?.onlineStatus || false,
+              screenResolution: this.deviceData?.screenResolution || "0x0",
+              deviceType: this.deviceData?.deviceType || "Unknown",
+              operatingSystem: this.deviceData?.operatingSystem || "Unknown",
+              browserName: this.deviceData?.browserName || "Unknown",
+              browserVersion: this.deviceData?.browserVersion || "Unknown",
+              connectionType: this.deviceData?.connectionType || "unknown",
+              deviceMemory: this.deviceData?.deviceMemory || null,
+              hardwareConcurrency: this.deviceData?.hardwareConcurrency || null,
+              sessionStartTime: new Date().toISOString(),
+              pageLoadTime: performance.now(),
+              utmSource: this.getUrlParameter("utm_source"),
+              utmMedium: this.getUrlParameter("utm_medium"),
+              utmCampaign: this.getUrlParameter("utm_campaign"),
+              referrer: this.deviceData?.referrer || "direct",
+            };
+          } catch (error) {
+            console.error("❌ Data collection error:", error);
+            return {
+              userId: this.userId,
+              sessionId: this.sessionId,
+              eventType: "new_user_session",
+              timestamp: new Date().toISOString(),
+              url: window.location.href,
+              domain: window.location.hostname,
+              userAgent: navigator.userAgent,
+              isActive: true,
+            };
+          }
+        }
+
+        async saveUserToDatabase(userData) {
+          try {
+            const response = await fetch(this.apiEndpoint, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Accept: "application/json",
+              },
+              body: JSON.stringify(userData),
+            });
+
+            if (response.ok) {
+
+              return true;
+            } else {
+              const errorText = await response.text();
+              console.error("❌ Failed to save user data:", response.status, errorText);
+              return false;
+            }
+          } catch (error) {
+            console.error("❌ Error saving user data:", error);
+            return false;
+          }
+        }
+
+        // Helper methods
+        getDeviceType() {
+          const userAgent = navigator.userAgent.toLowerCase();
+          if (/mobile|android|iphone|ipad|phone|tablet/i.test(userAgent)) {
+            if (/ipad|tablet/i.test(userAgent)) return "Tablet";
+            return "Mobile";
+          }
+          return "Desktop";
+        }
+
+        getOperatingSystem() {
+          const userAgent = navigator.userAgent;
+          if (/Windows NT 10.0/.test(userAgent)) return "Windows 10";
+          if (/Windows NT 6.3/.test(userAgent)) return "Windows 8.1";
+          if (/Windows NT 6.2/.test(userAgent)) return "Windows 8";
+          if (/Windows NT 6.1/.test(userAgent)) return "Windows 7";
+          if (/Windows/.test(userAgent)) return "Windows";
+          if (/iPhone OS/.test(userAgent)) return "iOS";
+          if (/iPad/.test(userAgent)) return "iPadOS";
+          if (/Android/.test(userAgent)) return "Android";
+          if (/Mac OS X/.test(userAgent)) return "macOS";
+          if (/Linux/.test(userAgent)) return "Linux";
+          return "Unknown OS";
+        }
+
+        getBrowserName() {
+          const userAgent = navigator.userAgent;
+          if (/Chrome/.test(userAgent) && !/Edg/.test(userAgent)) return "Chrome";
+          if (/Firefox/.test(userAgent)) return "Firefox";
+          if (/Safari/.test(userAgent) && !/Chrome/.test(userAgent)) return "Safari";
+          if (/Edg/.test(userAgent)) return "Edge";
+          if (/Opera/.test(userAgent)) return "Opera";
+          return "Unknown Browser";
+        }
+
+        getBrowserVersion() {
+          const userAgent = navigator.userAgent;
+          let match;
+          if ((match = userAgent.match(/Chrome\/(\d+)/))) return match[1];
+          if ((match = userAgent.match(/Firefox\/(\d+)/))) return match[1];
+          if ((match = userAgent.match(/Safari\/(\d+)/))) return match[1];
+          if ((match = userAgent.match(/Edg\/(\d+)/))) return match[1];
+          if ((match = userAgent.match(/Opera\/(\d+)/))) return match[1];
+          return "Unknown";
+        }
+
+        getConnectionType() {
+          const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+          return connection ? connection.type : "unknown";
+        }
+
+        getEffectiveConnectionType() {
+          const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+          return connection ? connection.effectiveType : "unknown";
+        }
+
+        hasWebGLSupport() {
+          try {
+            const canvas = document.createElement("canvas");
+            return !!(canvas.getContext("webgl") || canvas.getContext("experimental-webgl"));
+          } catch (e) {
+            return false;
+          }
+        }
+
+        hasLocalStorageSupport() {
+          try {
+            localStorage.setItem("test", "test");
+            localStorage.removeItem("test");
+            return true;
+          } catch (e) {
+            return false;
+          }
+        }
+
+        hasSessionStorageSupport() {
+          try {
+            sessionStorage.setItem("test", "test");
+            sessionStorage.removeItem("test");
+            return true;
+          } catch (e) {
+            return false;
+          }
+        }
+
+        getUrlParameter(name) {
+          try {
+            if (typeof name !== 'string') return null;
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(name);
+          } catch (error) {
+            console.error("Error getting URL parameter:", error);
+            return null;
+          }
+        }
+
+        isReturningUser() {
+          const visitCount = this.getVisitCount();
+          return visitCount > 1;
+        }
+
+        getVisitCount() {
+          const count = localStorage.getItem("AiProd_visit_count") || "0";
+          const newCount = parseInt(count, 10) + 1;
+          localStorage.setItem("AiProd_visit_count", newCount.toString());
+          return newCount;
+        }
+
+        getCookie(name) {
+          try {
+            if (typeof name !== 'string') return null;
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(";").shift();
+            return null;
+          } catch (error) {
+            console.error("Error getting cookie:", error);
+            return null;
+          }
+        }
+
+        setCookie(name, value, days) {
+          try {
+            if (typeof name !== 'string' || typeof value !== 'string') return;
+            const expires = new Date(Date.now() + days * 864e5).toUTCString();
+            document.cookie = `${name}=${value}; expires=${expires}; path=/`;
+          } catch (error) {
+            console.error("Error setting cookie:", error);
+          }
+        }
+
+        generateUserId() {
+          return "u_" + Date.now().toString(36) + "_" + Math.random().toString(36).substr(2, 8);
+        }
+
+        generateSessionId() {
+          return "s_" + Date.now().toString(36) + "_" + Math.random().toString(36).substr(2, 8);
+        }
+
+        trackActivity() {
+          this.isTracking = true;
+
+        }
+
+        getDeviceName() {
+          return "Unknown Device";
+        }
+      }
+
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", () => {
+          new EnhancedUserTracker();
+        });
+      } else {
+        new EnhancedUserTracker();
+      }
+    })();
+  </script>
+
+  <!-- Title Script -->
+  <script>
+    function updateTitle() {
+      const path = window.location.pathname;
+      const pathSegments = path.split("/").filter((segment) => segment !== "");
+      const lastSegment = pathSegments[pathSegments.length - 1];
+
+      if (lastSegment) {
+        const formattedTitle = lastSegment
+          .replace(/[-_]/g, " ")
+          .replace(/\b\w/g, (letter) => letter.toUpperCase());
+        document.title = `${formattedTitle} - AiProd`;
+      } else {
+        document.title = "AiProd";
+      }
+    }
+
+    updateTitle();
+    window.addEventListener("popstate", updateTitle);
+  </script>
+
+  <!-- Main JS entry -->
+  <script type="module" src="/src/main.tsx"></script>
+
+  <!-- Preloader management -->
+  <script>
+    const isFirstVisit = !sessionStorage.getItem("app_loaded");
+
+    if (!isFirstVisit) {
+      const preloader = document.getElementById("preloader");
+      if (preloader) {
+        preloader.style.display = "none";
+      }
+    } else {
+      function removePreloader() {
+        const preloader = document.getElementById("preloader");
+        if (preloader) {
+          preloader.style.opacity = "0";
+          setTimeout(() => {
+            preloader.remove();
+            sessionStorage.setItem("app_loaded", "true");
+          }, 300);
+        }
+      }
+
+      function checkReactMount() {
+        const root = document.getElementById("root");
+        if (root && root.children.length > 0) {
+          removePreloader();
+        } else {
+          setTimeout(checkReactMount, 50);
+        }
+      }
+
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", checkReactMount);
+      } else {
+        checkReactMount();
+      }
+    }
+  </script>
+</body>
+
+</html>

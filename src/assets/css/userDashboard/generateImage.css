@@ -1,0 +1,250 @@
+/* new code  */
+.left-panel-image {
+  flex: 1;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  background: var(--bg-02);
+  position: relative;
+  border: 2px solid transparent;
+  border: 1.13px solid;
+  border: var(--border-color);
+}
+
+.left-panel-image .btn-image {
+  width: 100%;
+}
+
+.text-to-image-item {
+  margin-top: 10px;
+}
+
+.smart-ai-prompt-are textarea {
+  background: var(--bg-02);
+  backdrop-filter: blur(4px);
+  border-radius: 12px;
+  width: 100%;
+  height: 110px;
+  border: none;
+  padding: 10px;
+  line-height: 1.5;
+  overflow-y: auto;
+  color: #ffffff;
+}
+
+.input-filed-item-smart-ai select,
+.input-filed-item-smart-ai input {
+  align-items: center;
+  background: var(--bg-02);
+  border-radius: 8px;
+  padding: 15px 16px;
+  width: 100%;
+  border: var(--border-color);
+  color: #ffffff;
+}
+
+.select-item-data {
+  display: flex;
+  align-items: center;
+  background: var(--bg-02);
+  border-radius: 8px;
+  padding: 10px 16px;
+  width: 100%;
+}
+
+.select-item-data {
+  display: flex;
+  align-items: center;
+  margin-right: 12px;
+}
+
+.select-item-data img {
+  width: 24px;
+  height: 24px;
+  margin-right: 20px;
+}
+
+.form-select {
+  background-color: transparent;
+  border: none;
+  color: white;
+  font-size: 14px;
+  font-weight: 500;
+  width: 100%;
+  cursor: pointer;
+  outline: none;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+}
+
+.form-select option {
+  background-color: #1c2640;
+  color: white;
+  border-radius: 5px;
+  margin-top: 40px;
+}
+
+.image-options-row {
+  display: flex;
+  gap: 10px;
+}
+
+.image-count-selector {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--bg-02);
+  padding: 20px 16px;
+  border-radius: 8px;
+  width: 100%;
+}
+
+.count-btn {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.count-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.count-value {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.aspect-ratio-selector {
+  display: flex;
+  gap: 5px;
+  width: 100%;
+  margin-top: 8px;
+}
+
+.aspect-ratio-selector .section-left,
+.aspect-ratio-selector .section-right {
+  flex: 1;
+}
+
+.ratio-icon {
+  color: var(--text-secondary);
+}
+
+.ratio-value {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.next-icon {
+  color: var(--text-secondary);
+}
+
+.generate-image-btn {
+  margin-top: auto;
+  background: var(--accent-gradient);
+  border: none;
+  border-radius: 50px;
+  padding: 14px;
+  color: var(--text-primary);
+  font-size: 16px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.generate-image-btn:hover {
+  opacity: 0.9;
+}
+
+.btn-icon {
+  font-size: 18px;
+}
+
+.results-section {
+  background-color: var(--panel-bg);
+  border-radius: 12px;
+  height: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.tabs-container {
+  display: flex;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.tab {
+  padding: 16px 24px;
+  font-size: 14px;
+  cursor: pointer;
+  position: relative;
+  color: var(--text-secondary);
+}
+
+.tab.active {
+  color: var(--text-primary);
+}
+
+.tab.active::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background-color: var(--accent-blue);
+}
+
+.results-content {
+  padding: 20px;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.output-text {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+  margin-bottom: 20px;
+}
+
+@media (max-width: 992px) {
+  .content-container {
+    flex-direction: column;
+  }
+
+  .prompt-section,
+  .results-section {
+    width: 100%;
+  }
+
+  .generated-images-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 576px) {
+  .generated-images-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .image-options-row {
+    flex-direction: column;
+  }
+}

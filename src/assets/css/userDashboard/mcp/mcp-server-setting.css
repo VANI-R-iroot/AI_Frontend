@@ -1,0 +1,375 @@
+/* MCP Server Setup Styles */
+.mcp-server-setup {
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+.mcp-server-setup .header {
+  background: var(--bg-02);
+  backdrop-filter: blur(10px);
+  border: var(--border-color);
+  padding: 1rem 2rem;
+  border-radius: 12px;
+}
+
+.mcp-server-setup .header-content {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 0 auto;
+}
+
+.mcp-server-setup .header-title {
+  color: #ffffff;
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.mcp-server-setup .header-subtitle {
+  color: #b7c5db;
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.mcp-server-setup .mcp-server-main-container {
+  margin: 0 auto;
+  padding: 3rem 0;
+}
+/* CSS file */
+.mcp-server-setup .mcp-server-main-content-right-side {
+  padding-left: 30px;
+}
+
+.mcp-server-setup .mcp-server-setting-sidebar {
+  background: var(--bg-02);
+  border: var(--border-color);
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.mcp-server-setup .sidebar-title {
+  margin: 0 0 1.5rem 0;
+  color: #ffffff;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.mcp-server-setup .tab-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border-radius: 8px;
+  cursor: pointer;
+  background: transparent;
+  color: #4a5568;
+  margin-bottom: 0.5rem;
+  transition: all 0.2s ease;
+  border: none;
+  width: 100%;
+  text-align: left;
+}
+
+.mcp-server-setup .tab-item.active {
+  background: #667eea;
+  color: white;
+}
+
+.mcp-server-setup .tab-item span {
+  flex: 1;
+  font-weight: 400;
+}
+
+.mcp-server-setup .tab-item.active span {
+  font-weight: 500;
+}
+
+.mcp-server-setup .connection-status {
+  margin-top: 2rem;
+  padding: 1rem;
+  background: var(--bg-02);
+  border-radius: 8px;
+  border: var(--border-color);
+}
+
+.mcp-server-setup .status-title {
+  margin: 0 0 1rem 0;
+  color: #b7c5db;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.mcp-server-setup .status-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.mcp-server-setup .status-text {
+  font-size: 0.8rem;
+  color: #4a5568;
+  text-transform: capitalize;
+}
+
+.mcp-server-setup .main-content {
+  background: var(--bg-02);
+  border: var(--border-color);
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.mcp-server-setup .content-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.mcp-server-setup .content-title {
+  margin: 0;
+  color: #ffffff;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.mcp-server-setup .file-upload-area {
+  border: 2px dashed rgba(29, 41, 68, 0.911);
+  border-radius: 8px;
+  padding: 2rem;
+  text-align: center;
+  margin-bottom: 1.5rem;
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+  position: relative;
+}
+
+.mcp-server-setup .file-upload-area:hover {
+  border-color: #667eea;
+}
+
+.mcp-server-setup .file-upload-area.dragover {
+  border-color: #667eea;
+  background-color: rgba(102, 126, 234, 0.05);
+}
+
+.mcp-server-setup .upload-icon {
+  margin: 0 auto 1rem;
+  display: block;
+}
+
+.mcp-server-setup .upload-text {
+  color: #4a5568;
+  margin: 0 0 0.5rem 0;
+}
+
+.mcp-server-setup .upload-subtext {
+  color: #a0aec0;
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.mcp-server-setup .file-input {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.mcp-server-setup .success-message {
+  background: #f0fff4;
+  border: 1px solid #9ae6b4;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.mcp-server-setup .success-text {
+  color: #2f855a;
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.mcp-server-setup .form-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #4a5568;
+  font-weight: 500;
+}
+
+.mcp-server-setup .form-input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  box-sizing: border-box;
+}
+
+.mcp-server-setup .form-input:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.mcp-server-setup .help-text {
+  color: #a0aec0;
+  font-size: 0.8rem;
+  margin: 0.5rem 0 0 0;
+}
+
+.mcp-server-setup .info-box {
+  background: #fffaf0;
+  border: 1px solid #fed7aa;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.mcp-server-setup .info-title {
+  margin: 0 0 0.5rem 0;
+  color: #c05621;
+  font-size: 0.9rem;
+}
+
+.mcp-server-setup .info-list {
+  color: #9c4221;
+  font-size: 0.8rem;
+  margin: 0;
+  padding-left: 1.2rem;
+}
+
+.mcp-server-setup .btn {
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.mcp-server-setup .btn:disabled {
+  cursor: not-allowed;
+}
+
+.mcp-server-setup .btn-primary {
+  background: #667eea;
+  color: white;
+}
+
+.mcp-server-setup .btn-primary:hover:not(:disabled) {
+  background: #5a67d8;
+}
+
+.mcp-server-setup .btn-disabled {
+  background: #31363dc2;
+  color: white;
+}
+
+.mcp-server-setup .mt-2 {
+  margin-top: 2rem;
+}
+
+@media (max-width: 768px) {
+  .mcp-server-setup .main-container {
+    padding: 1rem;
+  }
+
+  .mcp-server-setup .header {
+    padding: 1rem;
+  }
+
+  .mcp-server-setup .mcp-server-setting-sidebar,
+  .mcp-server-setup .main-content {
+    padding: 1rem;
+  }
+}
+
+/* Add these styles to your existing CSS file */
+
+.mcp-server-setup .status-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #5e708611;
+}
+
+.mcp-server-setup .status-item:last-child {
+  border-bottom: none;
+}
+
+.mcp-server-setup .status-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mcp-server-setup .status-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: opacity 0.2s ease;
+}
+
+.mcp-server-setup .action-btn {
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  background: var(--bg-02);
+  border: var(--border-color);
+  color: #ffffff;
+}
+
+.mcp-server-setup .edit-btn:hover {
+  background: #e3f2fd;
+  color: #1976d2;
+}
+
+.mcp-server-setup .delete-btn:hover {
+  background-color: #ffebee;
+  color: #d32f2f;
+}
+
+.mcp-server-setup .action-btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(66, 153, 225, 0.5);
+}
+
+/* Button group styles */
+.mcp-server-setup .button-group {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.mcp-server-setup .btn-secondary {
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.mcp-server-setup .btn-secondary:hover {
+  background-color: #5a6268;
+}
+
+.mcp-server-setup .ml-2 {
+  margin-left: 8px;
+}

@@ -1,0 +1,80 @@
+.delete-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.808);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.delete-modal-card {
+  background: #131625;
+  padding: 35px 30px;
+  border-radius: 8px;
+  max-width: 500px;
+  width: 100%;
+  text-align: center;
+  border: var(--border-color);
+  backdrop-filter: blur(96px);
+}
+.delete-modal-card-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+  width: 60px;
+  height: 60px;
+  background: var(--bg-02);
+  border-radius: 50%;
+  border: var(--border-color);
+}
+
+.delete-modal-card-icon svg {
+  color: #ef4444;
+  font-size: 35px;
+}
+
+.delete-modal-title {
+  font-size: 1.2rem;
+  font-weight: bold;
+  padding-top: 10px;
+}
+
+.delete-modal-description {
+  margin: 15px 0;
+  color: #555;
+}
+
+.delete-modal-actions {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+.delete-btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.delete-btn-secondary {
+  background: var(--bg-02);
+  color: #ffffff;
+  border: var(--border-color);
+}
+.delete-btn-secondary:hover {
+  background-color: #e2e8f0;
+  color: #1a202c;
+}
+.delete-btn-danger {
+  background-color: #ef4444;
+  color: white;
+}
+.delete-btn-danger:hover {
+  background-color: #8f0000;
+  color: white;
+}

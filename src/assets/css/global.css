@@ -1,0 +1,342 @@
+/* Common styles */
+
+.table-acton-button svg {
+  width: 35px;
+  height: 35px;
+  padding: 7px;
+  border-radius: 50px;
+  background: var(--bg-02);
+  border: var(--border-color);
+}
+
+.table-acton-button svg:hover {
+  background: #ffffff;
+  color: #000000;
+}
+
+textarea,
+input {
+  outline: none;
+}
+
+textarea:focus {
+  outline: 2px solid #5d3bf5;
+}
+
+input:focus {
+  outline: 2px solid #5d3bf5;
+}
+
+p {
+  color: var(--Content-Content-Neutral-300, #cbd5e1);
+}
+
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  transition: margin-left 0.3s ease;
+}
+
+:root {
+  --background-color: var(--BG-BG-Neutral-900, rgba(15, 23, 42, 1));
+  --bg-02: #343e5733;
+  --button-color: linear-gradient(94.75deg, #20c1c8 4.66%, #5d3bf5 93.44%);
+  --field-color: linear-gradient(
+    90deg,
+    rgba(92, 62, 244, 0.3) -86.32%,
+    rgba(35, 143, 151, 0.3) 167.05%
+  );
+  --border-color: 1.13px solid
+    var(--Border-Boder-Neutral-900, rgba(29, 41, 68, 0.911));
+  --primary-color: #1a9db1;
+  --secondary-color: #7b86a2;
+  --text-color: #ffffff;
+  --font-family: "Poppins", sans-serif;
+  --card-text-color: #e6f0ff;
+}
+
+/* dashboard footer  */
+.app-footer {
+  padding: 20px 45px;
+  margin-top: 30px;
+}
+
+.app-footer h2 {
+  font-size: 14px;
+}
+
+/* Heading Styles */
+.text-heading-h1 {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--primary-color);
+  font-family: var(--font-family);
+}
+
+.text-heading-h2 {
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--secondary-color);
+  font-family: var(--font-family);
+}
+
+.text-heading-p {
+  font-size: 16px;
+  font-weight: 400;
+  color: var(--text-color);
+  font-family: var(--font-family);
+  line-height: 1.5;
+}
+
+label {
+  margin-bottom: 4px;
+  font-family: Poppins;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.tabs-global {
+  display: flex;
+  border-bottom: var(--border-color);
+}
+
+.tab-chatbot.active::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 24px;
+  right: 24px;
+  height: 2px;
+  background-color: #58a6ff;
+}
+
+.tabs-button-section {
+  display: flex;
+}
+
+.generate-file-header {
+  display: flex;
+  justify-content: space-between;
+}
+
+.tabs-button-section {
+  display: flex;
+}
+
+.css-13cymwt-control {
+  background-color: #000000 !important;
+}
+
+.css-1nmdiq5-menu {
+  background: #d8d8d8 !important;
+}
+
+/* Main control (input area) */
+.rs__control {
+  color: #000;
+  border: 1px solid #ccc;
+  transition: background-color 0.2s ease;
+}
+
+.rs__control:hover {
+  background-color: #000000 !important;
+  color: #000000 !important;
+}
+
+.rs__control--is-focused {
+  background-color: #000000 !important;
+  color: #ffffff;
+}
+
+/* Dropdown menu */
+.rs__menu {
+  color: #ffffff;
+}
+
+/* Individual options */
+.rs__option {
+  color: #000000 !important;
+}
+
+/* Multi-value selected tags */
+.rs__multi-value {
+  color: #000000 !important;
+}
+
+.userDashboard-editor-container {
+  margin: 10px auto;
+  border-radius: 10px;
+  font-family: Arial, sans-serif;
+}
+
+.button-group-download {
+  display: flex;
+}
+
+.user-dashboard-editor-body {
+  padding: 1px;
+  overflow-y: auto;
+  flex-grow: 1;
+  line-height: 1.5;
+  border: none !important;
+}
+
+.user-dashboard-editor-body:focus {
+  outline: none;
+}
+
+.user-dashboard-editor-body[style*="text-align: center"] > * {
+  text-align: center;
+}
+
+.user-dashboard-editor-body[style*="text-align: right"] > * {
+  text-align: right;
+}
+
+.user-dashboard-editor-body ul,
+.user-dashboard-editor-body ol {
+  width: auto !important;
+}
+
+[style*="text-align: center"] {
+  text-align: center !important;
+}
+
+[style*="text-align: right"] {
+  text-align: right !important;
+}
+
+.user-dashboard-editor-body ul ul,
+.user-dashboard-editor-body ol ol,
+.user-dashboard-editor-body ul ol,
+.user-dashboard-editor-body ol ul {
+  padding-left: 20px !important;
+}
+
+/* table design */
+.css-r501j2-MuiDataGrid-root .MuiDataGrid-container--top [role="row"],
+.css-r501j2-MuiDataGrid-root .MuiDataGrid-container--bottom [role="row"] {
+  background: #00000000 !important;
+}
+
+.MuiDataGrid-container--top [role="row"],
+.css-r501j2-MuiDataGrid-root .MuiDataGrid-container--bottom [role="row"] {
+  background: #00000000 !important;
+}
+
+.css-155wbr6-MuiButtonBase-root-MuiIconButton-root {
+  color: #fff !important;
+}
+
+.css-6bej9m-MuiDataGrid-root {
+  --DataGrid-rowBorderColor: #02020211 !important;
+}
+
+/* short link text public*/
+.public-global-short-link-smart-ai {
+  padding-top: 30px;
+}
+
+.public-global-short-link-smart-ai span,
+.public-global-short-link-smart-ai a {
+  color: #cbd5e1;
+  text-decoration: none;
+  font-weight: 600;
+  font-family: var(--font-family);
+  font-size: 20px;
+}
+
+/* short link text dashboard*/
+
+.global-short-link-smart-ai a,
+.global-short-link-smart-ai span {
+  color: #cbd5e1;
+  text-decoration: none;
+}
+
+.global-link-limit-section {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  margin-top: 30px;
+}
+
+/* All user dashboard text editor  */
+
+.right-panel {
+  position: relative;
+  border: var(--border-color);
+  border-radius: 12px;
+}
+
+.chat-style-result-box {
+  background: #24220765;
+  padding-top: 20px;
+  padding-bottom: 20px;
+  padding-left: 20px;
+}
+
+/* open and close right side side bar code is start form here */
+
+.collapsible-sidebar {
+  position: fixed;
+  top: 8.5%;
+  right: 0;
+  width: 320px;
+  background: var(--bg-02);
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: -4px 0 15px rgba(0, 0, 0, 0.1);
+  height: 100vh;
+  backdrop-filter: blur(90px);
+}
+
+.collapsible-sidebar.closed {
+  width: 0px;
+  box-shadow: none;
+}
+
+.sidebar-toggle-button {
+  position: fixed;
+  top: 10.2%;
+  right: 320px;
+  transform: translateY(-50%);
+  background-color: #805ad5;
+  border: none;
+  color: white;
+  cursor: pointer;
+  padding: 12px 8px;
+  border-radius: 8px 0 0 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+
+  width: 32px;
+  height: 32px;
+  box-shadow: -3px 0 10px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(10px);
+}
+
+.sidebar-toggle-button:hover {
+  background-color: #9f7aea;
+  transform: translateY(-50%) scale(1.05);
+}
+
+.sidebar-toggle-button:active {
+  transform: translateY(-50%) scale(1);
+}
+
+@media (max-width: 1280px) {
+  .sidebar-toggle-button {
+    top: 11.2%;
+  }
+
+  .collapsible-sidebar {
+    top: 9.1%;
+  }
+}

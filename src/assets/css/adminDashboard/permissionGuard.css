@@ -1,0 +1,65 @@
+/* Permission Guard Styling */
+
+.permission-guard-wrapper {
+  position: relative;
+}
+
+.permission-guard-wrapper .permission-disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.permission-guard-wrapper .permission-disabled:hover {
+  background-color: inherit !important;
+  border-color: inherit !important;
+}
+
+/* Disabled button state */
+.permission-guard-wrapper button.permission-disabled,
+.permission-guard-wrapper input.permission-disabled,
+.permission-guard-wrapper select.permission-disabled,
+.permission-guard-wrapper textarea.permission-disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background-color: #e9ecef !important;
+  border-color: #dee2e6 !important;
+  color: #6c757d !important;
+}
+
+.permission-guard-wrapper button.permission-disabled:hover,
+.permission-guard-wrapper input.permission-disabled:hover,
+.permission-guard-wrapper select.permission-disabled:hover,
+.permission-guard-wrapper textarea.permission-disabled:hover {
+  background-color: #e9ecef !important;
+  border-color: #dee2e6 !important;
+}
+
+/* Tooltip for disabled elements */
+.permission-guard-wrapper [data-permission]:hover::after {
+  content: attr(data-permission);
+  position: absolute;
+  bottom: 125%;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+  z-index: 1000;
+  pointer-events: none;
+}
+
+.permission-guard-wrapper [data-permission]:hover::before {
+  content: "";
+  position: absolute;
+  bottom: 115%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: rgba(0, 0, 0, 0.8);
+  z-index: 1000;
+  pointer-events: none;
+}

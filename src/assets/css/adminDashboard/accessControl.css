@@ -1,0 +1,59 @@
+.access-control-page .card {
+  background: var(--bg-02);
+  border: var(--border-color);
+  color: var(--text-color);
+}
+
+.access-control-page h3,
+.access-control-page h5,
+.access-control-page th,
+.access-control-page td,
+.access-control-page label,
+.access-control-page li,
+.access-control-page strong,
+.access-control-page span {
+  color: var(--text-color);
+}
+
+.access-control-page .table {
+  color: var(--text-color);
+}
+
+.access-control-page .form-control,
+.access-control-page .form-select {
+  background: var(--bg-02);
+  border: var(--border-color);
+  color: var(--text-color);
+}
+
+.access-control-page .form-control::placeholder {
+  color: #94a3b8;
+}
+
+.access-control-page .btn-primary {
+  background: var(--button-color);
+  border: none;
+  color: #ffffff;
+}
+
+.access-control-page .btn-primary:hover {
+  filter: brightness(1.05);
+}
+
+.access-control-page .btn-outline-primary {
+  border: 1px solid #5d3bf5;
+  color: #e6f0ff;
+  background: transparent;
+}
+
+.access-control-page .btn-outline-danger {
+  border: 1px solid #dc3545;
+  color: #ffb3b3;
+  background: transparent;
+}
+
+.access-control-page .alert {
+  background: rgba(255, 99, 71, 0.12);
+  border: 1px solid rgba(255, 99, 71, 0.4);
+  color: #ffd6d0;
+}

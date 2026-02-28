@@ -1,0 +1,297 @@
+/* Card base styles */
+.referral-card,
+.withdrawal-card,
+.how-it-works-card {
+  background: var(--bg-02);
+  border-radius: 1rem;
+  padding: 2rem;
+  height: 100%;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  margin-bottom: 2rem;
+  border: var(--border-color);
+}
+.how-it-works-card {
+  margin-top: 25px;
+}
+.affiliate-image-user-dashboard {
+  width: 300px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0 auto;
+  text-align: center;
+}
+.content-wrapper-affiliate {
+  padding-top: 30px;
+  padding-right: 30px;
+}
+.affiliate-image-user-dashboard img {
+  width: 100%;
+  display: block;
+}
+.dashboard-affiliate-imgs img {
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  object-fit: contain;
+  display: block;
+  margin: 0 auto;
+  border: var(--border-color);
+  border-radius: 12px;
+}
+
+/* Referral card styles */
+
+.referral-content {
+  text-align: center;
+}
+
+.referral-title {
+  font-size: 1.5rem;
+  font-weight: 500;
+  margin-bottom: 1rem;
+}
+
+.referral-subtitle {
+  color: #8a7cff;
+  font-weight: 600;
+}
+
+.referral-description {
+  color: #8b93a7;
+  font-size: 0.9rem;
+  margin-bottom: 1.5rem;
+}
+
+.referral-link-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg-02);
+  padding: 6px 10px;
+  border-radius: 8px;
+  width: 100%;
+}
+
+.referral-link {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  outline: none;
+  border-radius: 6px;
+  background: #fffafa00;
+  font-size: 14px;
+  color: aliceblue;
+}
+
+.referral-copy-btn {
+  background-color: #4f46e5;
+  color: white;
+  border: none;
+  padding: 10px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.referral-copy-btn:hover {
+  background-color: #4a5e99;
+}
+
+.referral-share {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding-top: 20px;
+}
+
+.share-text {
+  margin: 0;
+  color: #8b93a7;
+  font-size: 0.9rem;
+}
+
+.share-icons {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.share-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background-color: #10141e;
+  border-radius: 50%;
+  color: #8b93a7;
+  transition: color 0.2s, background-color 0.2s;
+}
+
+.share-icon:hover {
+  background-color: #3d4e81;
+  color: white;
+}
+
+/* Withdrawal card styles */
+.earnings-container {
+  background: var(--bg-02);
+  border-radius: 0.75rem;
+  padding: 1rem;
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.earnings-label {
+  color: #8b93a7;
+  font-size: 0.9rem;
+  margin-bottom: 0.25rem;
+}
+
+.earnings-amount {
+  font-size: 1.75rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.withdrawal-title {
+  font-size: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.withdrawal-label {
+  display: block;
+  color: #8b93a7;
+  font-size: 0.85rem;
+  margin-bottom: 0.5rem;
+}
+
+.withdrawal-input,
+.withdrawal-select {
+  width: 100%;
+  background-color: #1e2738;
+  border: none;
+  border-radius: 0.5rem;
+  color: white;
+  padding: 0.75rem;
+  margin-bottom: 1rem;
+  outline: none;
+}
+
+.custom-select {
+  position: relative;
+  width: 100%;
+}
+
+.custom-select::after {
+  content: "▼";
+  position: absolute;
+  top: 50%;
+  right: 1rem;
+  transform: translateY(-50%);
+  color: #8b93a7;
+  pointer-events: none;
+  font-size: 0.7rem;
+}
+
+.withdrawal-select {
+  appearance: none;
+  cursor: pointer;
+}
+
+.amount-input-wrapper {
+  position: relative;
+}
+
+.currency-symbol {
+  position: absolute;
+  top: 50%;
+  left: 0.75rem;
+  transform: translateY(-70%);
+  color: white;
+}
+
+.amount-input {
+  padding-left: 1.5rem;
+}
+
+.withdrawal-submit-btn {
+  width: 100%;
+  background: linear-gradient(to right, #4bc0c8, #5e7ce2);
+  border: none;
+  border-radius: 2rem;
+  color: white;
+  padding: 0.75rem;
+  font-weight: 500;
+  margin-top: 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: opacity 0.2s;
+}
+
+.withdrawal-submit-btn:hover {
+  opacity: 0.9;
+}
+
+/* How it works section */
+.how-it-works-title {
+  font-size: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.how-it-works-description {
+  color: #8b93a7;
+  line-height: 1.6;
+  margin-bottom: 1rem;
+}
+
+.how-it-works-list {
+  list-style-type: none;
+  padding-left: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.how-it-works-item {
+  position: relative;
+  color: #8b93a7;
+  margin-bottom: 0.75rem;
+  line-height: 1.6;
+}
+
+.how-it-works-item::before {
+  content: "•";
+  position: absolute;
+  left: -1.5rem;
+  color: #8a7cff;
+}
+
+.admin-affiliate-page-section {
+  flex: 1;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  padding: 40px;
+  background: var(--bg-02);
+  position: relative;
+  border: 2px solid transparent;
+  border: 1.13px solid;
+  border: var(--border-color);
+}
+
+/* Responsive adjustments */
+@media (max-width: 767px) {
+  .form-row {
+    display: block;
+  }
+
+  .form-group {
+    width: 100%;
+    margin-bottom: 1rem;
+  }
+}

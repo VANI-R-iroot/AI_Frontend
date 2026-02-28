@@ -1,0 +1,763 @@
+.sidebar {
+  overflow-y: auto;
+  width: 280px;
+  position: fixed;
+  height: 100vh;
+  left: 0;
+  top: 0;
+  overflow-x: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-right: var(--border-color);
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  background: var(--bg-02);
+  z-index: 1000;
+}
+
+.sidebar::-webkit-scrollbar {
+  display: none;
+}
+
+.sidebar.hidden {
+  width: 80px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sidebar-item {
+  position: relative;
+  margin: 2px 8px;
+  border-radius: 12px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: visible;
+  padding-right: 30px !important;
+}
+.sidebar-item::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(92, 62, 244, 0.1) 0%,
+    rgba(35, 143, 151, 0.1) 100%
+  );
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  border-radius: 12px;
+}
+
+.sidebar-item:hover::before {
+  opacity: 1;
+}
+
+.sidebar-menu {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  flex: 1;
+  overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.sidebar.hidden .sidebar-menu {
+  max-height: calc(100vh - 10px);
+}
+
+/* Sidebar expanded (not hidden) */
+.sidebar:not(.hidden) .sidebar-menu {
+  max-height: calc(100vh - 180px);
+}
+
+/* Admin Sidebar - Different height */
+.sidebar.admin-sidebar:not(.hidden) .admin-sidebar-menu {
+  max-height: calc(100vh - 50px) !important;
+}
+
+/* Super Admin Sidebar - You can set different height if needed */
+.sidebar.super-admin-sidebar:not(.hidden) .super-admin-sidebar-menu {
+  max-height: calc(100vh - 200px) !important;
+}
+
+.sidebar-subicon {
+  font-size: 24px;
+  transition: color 0.3s ease;
+}
+
+.admin-sidebar-logo {
+  height: 80px;
+  padding-top: 20px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  transition: all 0.3s ease;
+  background: linear-gradient(
+    135deg,
+    rgba(117, 62, 244, 0.1) 0%,
+    rgba(35, 143, 151, 0.007) 100%
+  );
+  backdrop-filter: blur(20px);
+}
+
+.admin-sidebar-logo a {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  color: #ffffff;
+  padding: 0 16px;
+  transition: all 0.3s ease;
+}
+
+.admin-sidebar-logo img {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  filter: drop-shadow(0 2px 8px rgba(92, 62, 244, 0.3));
+}
+
+.admin-sidebar-logo h2 {
+  font-family: "Poppins", sans-serif;
+  font-weight: 600;
+  font-size: 24px;
+  line-height: 1.2;
+  background: linear-gradient(135deg, #ffffff 0%, #e0e7ff 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  transition: all 0.3s ease;
+}
+
+.sidebar-title {
+  height: 30px;
+  display: flex;
+  align-items: center;
+}
+
+.sidebar-icon svg,
+.sidebar-icon {
+  width: 20px;
+  height: 20px;
+  margin-right: 16px;
+  transition: all 0.3s ease;
+  filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.3));
+  color: rgba(255, 255, 255, 0.719);
+  margin-top: -8px;
+}
+
+.sidebar-icon svg {
+  margin-top: 0;
+}
+
+.sidebar.hidden .sidebar-title {
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.sidebar-subitem,
+.sidebar-item {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  color: rgba(255, 255, 255, 0.719);
+  white-space: nowrap;
+  overflow: hidden;
+  border-radius: 8px;
+  padding: 10px 18px !important;
+  margin: 2px 10px;
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.sidebar-item.has-submenu {
+  justify-content: space-between;
+}
+
+.menu-content {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  z-index: 2;
+  position: relative;
+}
+
+.arrow-container {
+  margin-left: auto;
+  z-index: 2;
+  position: relative;
+}
+
+.submenu-arrow {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 18px;
+  transition: all 0.3s ease;
+}
+
+.sidebar-subitem.active,
+.sidebar-item.active {
+  color: #6c52ff;
+  /* transform: translateX(4px); */
+  background: var(--bg-02);
+}
+
+.sidebar-subitem.active .sidebar-icon,
+.sidebar-item.active .sidebar-icon svg {
+  color: #6c52ff;
+  filter: drop-shadow(0 2px 8px rgba(92, 62, 244, 0.4));
+}
+
+.sidebar-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+  transform: translateX(2px);
+  color: #6c52ff;
+}
+
+.sidebar-item.disabled,
+.sidebar-subitem.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.sidebar-item.disabled:hover,
+.sidebar-subitem.disabled:hover {
+  background: transparent;
+  transform: none;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.sidebar-item.disabled .submenu-arrow {
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.sidebar-item:hover .sidebar-icon svg {
+  transform: scale(1.1);
+  filter: drop-shadow(0 2px 8px rgba(92, 62, 244, 0.3));
+  color: #6c52ff;
+}
+
+.sidebar-item:hover .submenu-arrow {
+  color: rgba(255, 255, 255, 0.9);
+  transform: scale(1.1);
+}
+
+.sidebar-link {
+  text-decoration: none;
+  display: block;
+  width: 100%;
+}
+
+.sidebar-submenu {
+  list-style: none;
+  padding: 0;
+  margin: 8px 0 0 0;
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  backdrop-filter: blur(10px);
+}
+
+.sidebar-submenu li {
+  margin: 0;
+}
+
+.sidebar-subitem {
+  padding: 7px 24px;
+  margin: 2px 10px;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.75);
+  border-radius: 8px;
+  position: relative;
+}
+
+.sidebar-subitem:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: #6c52ff;
+  transform: translateX(4px);
+}
+
+.sub-sidebar-text {
+  font-size: 14px;
+  font-weight: 400;
+  padding-left: 0;
+  color: inherit;
+  transition: all 0.3s ease;
+}
+
+.sidebar-text {
+  font-size: 14px;
+  font-weight: 500;
+  color: inherit;
+  transition: all 0.3s ease;
+}
+
+.sidebar.hidden .sidebar-text {
+  opacity: 0;
+  visibility: hidden;
+  transform: translateX(-20px);
+  transition: all 0.3s ease;
+}
+
+.sidebar-icon {
+  opacity: 0.9;
+  transition: all 0.3s ease;
+}
+
+.sidebar.hidden .sidebar-icon {
+  margin-right: 0;
+  opacity: 1;
+}
+
+.sidebar.visible {
+  width: 280px;
+  transition: all 0.3s ease;
+}
+
+.layout.sidebar-closed .wrapper {
+  padding-left: 80px;
+  transition: all 0.3s ease;
+}
+
+.layout.sidebar-open .wrapper {
+  padding-left: 280px;
+  transition: all 0.3s ease;
+}
+
+.sidebar-subicon svg {
+  font-size: 30px;
+}
+
+.submenu-content {
+  line-height: 1.4;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.site-bar-title {
+  font-family: "Poppins", sans-serif;
+  font-weight: 600;
+  font-size: 12px;
+  line-height: 1.4;
+  letter-spacing: 0.5px;
+  color: rgba(255, 255, 255, 0.5);
+  padding: 24px 24px 12px 24px;
+  margin: 0;
+  text-transform: uppercase;
+  position: relative;
+  margin-top: 10px;
+}
+
+.sidebar.hidden .site-bar-title {
+  padding: 0 !important;
+  text-align: center !important;
+  font-size: 9px;
+}
+
+.site-bar-title::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0px;
+  right: 24px;
+  height: 1px;
+  background: var(--bg-02);
+}
+
+.profile-section {
+  position: sticky;
+  margin: 16px;
+  padding: 20px;
+  background: linear-gradient(
+    135deg,
+    rgba(92, 62, 244, 0.1) 0%,
+    rgba(35, 143, 151, 0.1) 100%
+  );
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+}
+
+.profile-section:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 40px rgba(92, 62, 244, 0.2);
+}
+
+.profile-section p {
+  margin: 0 0 16px 0;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.7);
+  text-align: center;
+  line-height: 1.4;
+  font-weight: 400;
+}
+
+.profile-section button {
+  width: 100%;
+  background: linear-gradient(135deg, #20c1c8 0%, #5d3bf5 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 12px 16px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 13px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 20px rgba(92, 62, 244, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.profile-section button::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.2) 50%,
+    transparent 100%
+  );
+  transition: left 0.5s ease;
+}
+
+.profile-section button:hover::before {
+  left: 100%;
+}
+
+.profile-section button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(92, 62, 244, 0.4);
+}
+
+.profile-section button:active {
+  transform: translateY(0);
+}
+
+/* User sidebar: prevent overlap by disabling sticky */
+.sidebar.user-sidebar .profile-section {
+  position: relative;
+}
+
+/* Tooltip Styles */
+.sidebar-tooltip {
+  position: absolute;
+  left: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  margin-left: 15px;
+  background: rgba(20, 20, 20, 0.95);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 0;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 1000;
+  min-width: 160px;
+  max-width: 280px;
+  pointer-events: none;
+}
+
+.sidebar-tooltip::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: -8px;
+  transform: translateY(-50%);
+  width: 0;
+  height: 0;
+  border-top: 8px solid transparent;
+  border-bottom: 8px solid transparent;
+  border-right: 8px solid rgba(20, 20, 20, 0.95);
+}
+
+.sidebar-item:hover .sidebar-tooltip {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(-50%) translateX(5px);
+  pointer-events: auto;
+}
+
+.tooltip-content {
+  padding: 12px;
+}
+
+.tooltip-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #ffffff;
+  margin-bottom: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 8px;
+}
+
+.simple-tooltip .tooltip-content {
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #ffffff;
+  white-space: nowrap;
+}
+
+.tooltip-submenu {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.tooltip-subitem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  text-decoration: none;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 13px;
+  transition: all 0.2s ease;
+}
+
+.tooltip-subitem:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #6c52ff;
+  transform: translateX(4px);
+}
+
+.tooltip-subitem.active {
+  background: linear-gradient(
+    135deg,
+    rgba(92, 62, 244, 0.2) 0%,
+    rgba(35, 143, 151, 0.2) 100%
+  );
+  color: #6c52ff;
+}
+
+.tooltip-subicon {
+  font-size: 16px;
+  opacity: 0.8;
+  transition: all 0.2s ease;
+}
+
+.tooltip-subitem:hover .tooltip-subicon {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+@media (max-height: 800px) {
+  .sidebar-menu {
+    max-height: calc(100vh - 200px);
+  }
+
+  .profile-section {
+    margin: 12px;
+    padding: 16px;
+  }
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    width: 100%;
+    transform: translateX(-100%);
+  }
+
+  .sidebar.visible {
+    transform: translateX(0);
+  }
+
+  .sidebar.hidden {
+    transform: translateX(-100%);
+  }
+
+  .sidebar-tooltip {
+    display: none;
+  }
+}
+
+.sidebar-submenu {
+  animation: slideDown 0.3s ease-out;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease-out;
+}
+
+.sidebar-submenu.open {
+  max-height: 500px;
+}
+
+.sidebar-item.has-submenu.has-active-subitem {
+  background: linear-gradient(
+    135deg,
+    rgba(92, 62, 244, 0.2) 0%,
+    rgba(35, 143, 151, 0.2) 100%
+  );
+}
+
+.sidebar-item.has-submenu.has-active-subitem .submenu-arrow {
+  color: rgba(255, 255, 255, 0.9);
+  transform: rotate(180deg);
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.sidebar-menu::-webkit-scrollbar {
+  width: 4px;
+}
+
+.sidebar-menu::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar-menu::-webkit-scrollbar-thumb {
+  background: linear-gradient(
+    135deg,
+    rgba(92, 62, 244, 0.3) 0%,
+    rgba(35, 143, 151, 0.3) 100%
+  );
+  border-radius: 2px;
+}
+
+.sidebar-menu::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(
+    135deg,
+    rgba(92, 62, 244, 0.5) 0%,
+    rgba(35, 143, 151, 0.5) 100%
+  );
+}
+
+/* new code here  */
+
+@media (max-width: 768px) {
+  .layout.sidebar-closed .wrapper {
+    padding-left: 0px;
+  }
+  .layout.sidebar-open .wrapper {
+    padding-left: 0;
+  }
+
+  .sidebar {
+    width: 180px;
+    transform: translateX(-100%);
+    z-index: 1100;
+    background: var(--bg-02);
+    backdrop-filter: blur(90px);
+  }
+
+  .sidebar.visible {
+    transform: translateX(0);
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+  }
+
+  .sidebar.hidden {
+    transform: translateX(-100%);
+  }
+}
+
+.sidebar-close-btn {
+  position: absolute;
+  top: 24px;
+  right: 10px;
+  background-color: #cbdaf8;
+  color: #000;
+  padding: 8px 12px;
+  border-radius: 9999px;
+  font-size: 10px;
+  z-index: 9999;
+  display: none;
+  border: none;
+}
+
+@media (max-width: 768px) {
+  .sidebar-close-btn {
+    display: block;
+  }
+}
+
+/* Hide arrow container when sidebar is collapsed */
+.sidebar.hidden .arrow-container {
+  display: none;
+}
+
+/* Make sure icons are centered when collapsed */
+.sidebar.hidden .sidebar-icon {
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  margin-right: 0;
+}
+
+/* Hide React tooltips when sidebar is collapsed */
+.sidebar.hidden .sidebar-tooltip {
+  display: none !important;
+}
+
+/* CSS fallback tooltips (backup) */
+.sidebar.hidden .sidebar-item::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  left: calc(100% + 15px);
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(2, 2, 2, 0.95);
+  backdrop-filter: blur(20px);
+  color: #ffffff;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+  z-index: 9999;
+  pointer-events: none;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+.sidebar.hidden .sidebar-item:hover::after {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(-50%) translateX(5px);
+}
+
+/* For submenu tooltips */
+.sidebar.hidden .sidebar-item.has-submenu::after {
+  content: attr(data-tooltip) "\A"attr(data-submenu);
+  white-space: pre-line;
+  line-height: 1.4;
+  padding: 12px 16px;
+  max-width: 240px;
+  word-wrap: break-word;
+  background: linear-gradient(
+    135deg,
+    rgba(156, 7, 7, 0.95) 0%,
+    rgba(25, 25, 25, 0.95) 100%
+  );
+  border: 1px solid rgba(108, 82, 255, 0.2);
+  box-shadow: 0 8px 32px rgba(108, 82, 255, 0.2);
+}
+
+/* Responsive - hide tooltips on mobile */
+@media (max-width: 768px) {
+  .sidebar.hidden .sidebar-item::after {
+    display: none !important;
+  }
+}

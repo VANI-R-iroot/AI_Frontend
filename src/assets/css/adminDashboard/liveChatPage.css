@@ -1,0 +1,223 @@
+
+.live-chat-intro-section {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 60vh;
+  text-align: center;
+}
+
+.live-chat-intro-section h1 {
+  font-family: Poppins;
+  font-weight: 500;
+  font-size: 24px;
+  line-height: 29px;
+  letter-spacing: 0%;
+  text-align: center;
+}
+
+.admin-live-chat-page-header {
+  display: flex;
+}
+
+.admin-live-chat-header-icon {
+  width: 40px;
+  height: 40px;
+  background: var(--button-color);
+  display: flex;
+  justify-content: center;
+  border-radius: 40px;
+}
+
+.admin-live-chat-page-header h4 {
+  font-size: 14px;
+}
+
+.admin-dashboard-agent-template-item {
+  display: flex;
+  align-items: center;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  margin-top: 10px;
+}
+
+.admin-dashboard-agent-template-item.active {
+  background-color: #362c728a;
+  border-left: 4px solid #2196f3;
+}
+
+.admin-dashboard-agent-template-item:hover {
+  background-color: #161b22;
+}
+
+.admin-dashboard-agent-template-item.selected {
+  background-color: #161b22;
+}
+
+.admin-live-chat-page-body {
+  height: 700px;
+  overflow-y: scroll;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  cursor: pointer;
+}
+
+.admin-live-chat-page-body::-webkit-scrollbar {
+  display: none;
+}
+
+.admin-live-chat-page-left-section {
+  flex: 2;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  height: 100%;
+  position: relative;
+  backdrop-filter: blur(98.57086181640625px);
+  background: var(--bg-02);
+  border: 2px solid transparent;
+  border: 1.13px solid;
+  border: var(--border-color);
+}
+
+.chat-msg {
+  display: flex;
+  margin: 8px 0;
+}
+
+.chat-msg.left {
+  justify-content: flex-start;
+}
+
+.chat-msg.right {
+  justify-content: flex-end;
+}
+
+.admin-body-chat-text {
+  max-width: 60%;
+  padding: 8px 14px;
+  border-radius: 8px;
+  background-color: #a78fff0e;
+  color: #ffffffd8;
+  font-size: 14px;
+}
+
+.admin-chatbot-time {
+  margin-top: 10px;
+  font-size: 12px;
+  font-style: italic;
+  font-weight: 400;
+}
+
+.chat-msg.right .admin-body-chat-text {
+  margin-top: 15px;
+  background-color: hsla(211, 100%, 68%, 0.486);
+  color: #ffffff;
+}
+
+.live-chat-input-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #1e2842;
+  border-radius: 40px;
+  width: 100%;
+  padding: 15px;
+  box-sizing: border-box;
+}
+
+.live-input-text {
+  padding: 12px 20px;
+  font-size: 16px;
+  line-height: 1.5;
+  border-radius: 20px;
+  border: none;
+  background-color: #ffffff00;
+  color: #333;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  width: 100%;
+}
+
+.live-input-text:focus {
+  outline: none;
+  box-shadow: none;
+  background-color: #f0f0f0;
+}
+
+.live-input-text:focus {
+  background-color: #e0e0e000;
+  color: #fffdfd;
+}
+
+.notification-badge {
+  background-color: red;
+  color: white;
+  border-radius: 12px;
+  padding: 2px 6px;
+  font-size: 12px;
+  margin-left: 8px;
+}
+
+/* admin live chat right side css start from here  */
+
+.admin-live-chat-page-right-section {
+  border-radius: 8px;
+
+  height: 81vh;
+  overflow-y: auto;
+  scroll-behavior: smooth;
+
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.admin-live-chat-page-right-section::-webkit-scrollbar {
+  display: none;
+}
+
+.admin-dashboard-user-template-icon {
+  width: 40px;
+  height: 40px;
+  margin-right: 5px;
+}
+
+.admin-dashboard-user-template-icon img {
+  width: 100%;
+}
+
+.delete-popup-card {
+  position: absolute;
+  top: 40px;
+  right: 0;
+  background: rgb(255, 255, 255);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  padding: 8px 12px;
+  border-radius: 6px;
+  z-index: 100;
+  width: 180px;
+}
+
+.popup-option {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  color: red;
+  font-size: 14px;
+  padding: 6px 4px;
+  border-radius: 4px;
+}
+
+.popup-option:hover {
+  background-color: #f5f5f5;
+}

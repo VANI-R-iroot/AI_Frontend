@@ -1,0 +1,104 @@
+.user-profile-content-area,
+.user-profile-sidebar-content {
+  border: var(--border-color);
+  background: var(--bg-02);
+  border-radius: 12px;
+  padding: 60px 60px;
+}
+.profile-summary {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+.avatar-container {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  overflow: hidden;
+  background-color: #333;
+  margin-bottom: 1rem;
+}
+.avatar-container img {
+  width: 100%;
+}
+.profile-name {
+  color: #2196f3;
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.profile-role {
+  color: #aaa;
+  font-size: 1rem;
+}
+
+.profile-stat-item-section {
+  border-top: 1px solid rgba(66, 65, 65, 0.438);
+  border-bottom: 1px solid rgba(66, 65, 65, 0.438);
+}
+
+.profile-stat-item {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
+  padding-top: 20px;
+  padding-bottom: 20px;
+}
+
+.stat-value {
+  color: #2196f3;
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+.stat-label {
+  color: #aaa;
+  font-size: 0.9rem;
+}
+
+.profile-sidebar-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.profile-menu-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.1rem;
+  padding: 0.1rem;
+  border: none;
+  background: #33333300;
+  color: #ffffffaf;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background-color 0.3s;
+}
+
+.profile-menu-button.active {
+  color: #5d3bf5;
+}
+
+.profile-menu-button:hover {
+  color: #2196f3;
+}
+
+.profile-setting-update-button button {
+  width: 100%;
+}
+
+.input-group-text {
+  background: var(--field-color);
+  border: none;
+  color: #fff;
+}
+
+@media (max-width: 1023px) {
+  .user-profile-sidebar-content {
+    margin-bottom: 45px;
+  }
+}
