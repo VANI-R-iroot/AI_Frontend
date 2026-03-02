@@ -66,15 +66,15 @@ const CreateTemplate: React.FC = () => {
   useEffect(() => {
     if (editData) {
       setFormData({
-        assistantIcon: editData.assistantIcon || "",
-        assistantName: editData.assistantName || "",
-        assistantTitle: editData.assistantTitle || "",
+        assistantIcon: editData.assistantIcon || editData.templateIcon || "",
+        assistantName: editData.assistantName || editData.templateName || "",
+        assistantTitle: editData.assistantTitle || editData.title || "",
         model: editData.selectedModel || "",
         randomness: editData.randomness?.toString() || "0.7",
         frequencyPenalty: editData.frequencyPenalty?.toString() || "0.7",
         presencePenalty: editData.presencePenalty?.toString() || "0.7",
         maximumLength: editData.token?.toString() || "40000",
-        assistantGroup: editData.assistantGroup || "",
+        assistantGroup: editData.assistantGroup || editData.category || "",
         package: editData.packageType || "",
         brandIcon: editData.brandIcon || "",
         promptDescription: editData.promptDescription || "",
@@ -112,22 +112,18 @@ const CreateTemplate: React.FC = () => {
       if (editData?._id) {
         // UPDATE
         submissionData.append("id", editData._id);
-        response = await axiosInstance.put("/updateAssistant", submissionData, {
+        response = await axiosInstance.put("/updateTemplate", submissionData, {
           headers: { "Content-Type": "multipart/form-data" },
         });
       } else {
         // CREATE
-        response = await axiosInstance.post(
-          "/createAssistant",
-          submissionData,
-          {
-            headers: { "Content-Type": "multipart/form-data" },
-          }
-        );
+        response = await axiosInstance.post("/createTemplate", submissionData, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
       }
 
       if (response.data.status === "success") {
-        navigate("/custom-chatbot-assistant", { state: { refresh: true } });
+        navigate("/custom-template", { state: { refresh: true } });
       } else {
         alert("Failed to save assistant");
       }

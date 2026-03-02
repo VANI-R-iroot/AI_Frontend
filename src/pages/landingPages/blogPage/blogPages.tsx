@@ -21,6 +21,19 @@ type BlogItem = {
   createDate: string;
 };
 
+const mapBlogItem = (item: any): BlogItem => ({
+  _id: String(item.id ?? item._id ?? ""),
+  title: item.title || "",
+  thumbnail: item.thumbnail || "",
+  coverImage: item.cover_image || item.coverImage || "",
+  category: item.category || "",
+  description: item.description || "",
+  tag: item.tag || "",
+  postCreate: item.post_create || item.postCreate || "",
+  active: Boolean(item.is_published ?? item.active ?? false),
+  createDate: item.created_at || item.createDate || new Date().toISOString(),
+});
+
 interface Category {
   name: string;
   count: number;
@@ -44,10 +57,13 @@ const BlogPages = () => {
   useEffect(() => {
     const fetchBlogList = async () => {
       try {
-        const res = await axiosInstance.get("/read-blog");
-        const faq = res.data.data;
-        sessionStorage.setItem("BlogList", JSON.stringify(faq));
-        setBlogData(faq);
+        const res = await axiosInstance.get(
+          "/blog?published_only=true&page=1&limit=200"
+        );
+        const items = Array.isArray(res.data?.data) ? res.data.data : [];
+        const blogs = items.map(mapBlogItem);
+        sessionStorage.setItem("BlogList", JSON.stringify(blogs));
+        setBlogData(blogs);
       } catch (error) {
         console.error("Fetch failed", error);
       }

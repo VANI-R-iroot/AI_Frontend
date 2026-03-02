@@ -17,6 +17,19 @@ type BlogItem = {
   createDate: string;
 };
 
+const mapBlogItem = (item: any): BlogItem => ({
+  _id: String(item.id ?? item._id ?? ""),
+  title: item.title || "",
+  thumbnail: item.thumbnail || "",
+  coverImage: item.cover_image || item.coverImage || "",
+  category: item.category || "",
+  description: item.description || "",
+  tag: item.tag || "",
+  postCreate: item.post_create || item.postCreate || "",
+  active: Boolean(item.is_published ?? item.active ?? false),
+  createDate: item.created_at || item.createDate || new Date().toISOString(),
+});
+
 const BlogSection: React.FC = () => {
   const [blogData, setBlogData] = useState<BlogItem[]>([]);
   const navigate = useNavigate();
@@ -24,11 +37,13 @@ const BlogSection: React.FC = () => {
   useEffect(() => {
     const fetchBlogList = async () => {
       try {
-        const res = await axiosInstance.get("/read-blog");
-        const blogData = res.data.data;
-        sessionStorage.setItem("BlogList", JSON.stringify(blogData));
-
-        setBlogData(blogData);
+        const res = await axiosInstance.get(
+          "/blog?published_only=true&page=1&limit=200"
+        );
+        const rows = Array.isArray(res.data?.data) ? res.data.data : [];
+        const blogs = rows.map(mapBlogItem);
+        sessionStorage.setItem("BlogList", JSON.stringify(blogs));
+        setBlogData(blogs);
       } catch (error) {
         console.error("Fetch failed", error);
       }

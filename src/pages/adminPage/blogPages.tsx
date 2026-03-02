@@ -15,6 +15,7 @@ import { useAdminPermissions } from "../../utils/useAdminPermissions";
 type Blog = {
   _id: string;
   title: string;
+  tag?: string;
   category: string;
   description: string;
   active: string;
@@ -35,14 +36,29 @@ const BlogPages = () => {
   
   // Get admin permissions
   const { hasPermission } = useAdminPermissions();
+
+  const mapBlogRow = (blog: any): Blog => ({
+    _id: String(blog.id ?? blog._id ?? ""),
+    title: blog.title || "",
+    tag: blog.tag || "",
+    category: blog.category || "",
+    description: blog.description || "",
+    active: String(Boolean(blog.is_published ?? blog.active ?? false)),
+    createDate: (blog.created_at || blog.create_date || blog.createDate || new Date().toISOString()) as Date,
+    coverImage: blog.cover_image || blog.coverImage || "",
+  });
+
   useEffect(() => {
     const fetchBlogList = async () => {
       setIsLoading(true);
       try {
-        const res = await axiosInstance.get(
-          `/blogList/${searchKeyWord || "0"}`
-        );
-        const blogs = res.data.data.users;
+        const keyword = searchKeyWord?.trim();
+        const endpoint = keyword
+          ? `/blog/search/query?keyword=${encodeURIComponent(keyword)}&page=1&limit=200`
+          : `/blog?published_only=false&page=1&limit=200`;
+        const res = await axiosInstance.get(endpoint);
+        const rawBlogs = Array.isArray(res.data?.data) ? res.data.data : [];
+        const blogs = rawBlogs.map(mapBlogRow);
         sessionStorage.setItem("blogList", JSON.stringify(blogs));
         setBlogList(blogs);
       } catch (error) {
@@ -66,16 +82,16 @@ const BlogPages = () => {
   }, [searchKeyWord]);
 
   const toggleVisibility = async (id: string, currentStatus: string) => {
-    const newStatus = currentStatus === "true" ? "false" : "true";
+    const newStatus = currentStatus !== "true";
 
     try {
-      await axiosInstance.post("/showHideBlog", {
-        id,
-        bullionData: newStatus,
+      await axiosInstance.put(`/blog/${id}`, {
+        is_published: newStatus,
       });
 
-      const res = await axiosInstance.get(`/blogList/${searchKeyWord || "0"}`);
-      const updatedBlogs = res.data.data.users;
+      const updatedBlogs = blogList.map((blog) =>
+        blog._id === id ? { ...blog, active: String(newStatus) } : blog
+      );
       sessionStorage.setItem("blogList", JSON.stringify(updatedBlogs));
       setBlogList(updatedBlogs);
     } catch (error) {
@@ -92,9 +108,7 @@ const BlogPages = () => {
     if (!selectedAnnouncementId) return;
 
     try {
-      const res = await axiosInstance.delete(
-        `/deleteAssistant/${selectedAnnouncementId}`
-      );
+      const res = await axiosInstance.delete(`/blog/${selectedAnnouncementId}`);
       if (res.status === 200) {
         const updatedList = blogList.filter(
           (blog) => blog._id !== selectedAnnouncementId
@@ -138,7 +152,10 @@ const BlogPages = () => {
       headerName: "Create Date",
       width: 130,
       renderCell: (params) => {
-        const formattedDate = format(new Date(params.value), "MM/dd/yy");
+        const date = new Date(params.value);
+        const formattedDate = Number.isNaN(date.getTime())
+          ? "-"
+          : format(date, "MM/dd/yy");
         return <span>{formattedDate}</span>;
       },
     },

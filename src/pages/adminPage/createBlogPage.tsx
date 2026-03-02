@@ -157,18 +157,19 @@ const CreateBlogPage: React.FC = () => {
       formData.append("tag", tag);
       formData.append("category", category);
       formData.append("postCreate", "Admin");
+      formData.append("is_published", "true");
 
       if (blogId) {
         formData.append("id", blogId);
       }
 
-      const response = await axiosInstance.post(
-        blogId ? "/updateBlogData" : "/crateBlog",
-        formData,
-        {
-          headers: { "Content-Type": "multipart/form-data" },
-        }
-      );
+      const response = blogId
+        ? await axiosInstance.put(`/blog/${blogId}`, formData, {
+            headers: { "Content-Type": "multipart/form-data" },
+          })
+        : await axiosInstance.post("/blog", formData, {
+            headers: { "Content-Type": "multipart/form-data" },
+          });
 
       if (response.data) {
         toast.success(

@@ -12,6 +12,9 @@ interface FormData {
   packageDuration: string;
   packageCurrency: string;
   price: number;
+  monthlyPrice: number;
+  yearlyPrice: number;
+  lifetimePrice: number;
   textToImageLimit: number;
   imageLimit: number;
   imageCaptionLimit: number;
@@ -48,6 +51,9 @@ const initialFormState: FormData = {
   packageDuration: "",
   packageCurrency: "",
   price: 0,
+  monthlyPrice: 0,
+  yearlyPrice: 0,
+  lifetimePrice: 0,
   textToImageLimit: 0,
   imageLimit: 0,
   imageCaptionLimit: 0,
@@ -71,6 +77,22 @@ const initialFormState: FormData = {
   teamMemberLimit: 0
 };
 
+const durationCombinationMap: Record<string, string[]> = {
+  Monthly: ["Monthly"],
+  Yearly: ["Yearly"],
+  "Life-Time": ["Life-Time"],
+  "Monthly+Yearly": ["Monthly", "Yearly"],
+  "Monthly+Life-Time": ["Monthly", "Life-Time"],
+  "Yearly+Life-Time": ["Yearly", "Life-Time"],
+  All: ["Monthly", "Yearly", "Life-Time"],
+};
+
+const getDurationPriceField = (duration: string): keyof FormData => {
+  if (duration === "Monthly") return "monthlyPrice";
+  if (duration === "Yearly") return "yearlyPrice";
+  return "lifetimePrice";
+};
+
 const SubscriptionForm: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -83,6 +105,10 @@ const SubscriptionForm: React.FC = () => {
 
   const isEditMode = Boolean(packageId);
   const isFreePackage = formData.packageType === "Free";
+  const selectedCreateDurations = !isEditMode
+    ? durationCombinationMap[formData.packageDuration] || []
+    : [];
+  const isMultiDurationCreate = !isEditMode && selectedCreateDurations.length > 1;
 
   const normalizeCurrencyCode = (currency: string) => {
     if (!currency) return "";
@@ -103,6 +129,10 @@ const SubscriptionForm: React.FC = () => {
 
 const validateForm = (): boolean => {
   const isFreePackage = formData.packageType === "Free";
+  const selectedDurations = !isEditMode
+    ? durationCombinationMap[formData.packageDuration] || []
+    : [];
+  const isMultiDuration = !isEditMode && selectedDurations.length > 1;
 
   if (!formData.title.trim()) {
     toast.error("Plan Title is required");
@@ -125,7 +155,16 @@ const validateForm = (): boolean => {
       return false;
     }
 
-    if (formData.price <= 0) {
+    if (isMultiDuration) {
+      const hasInvalidMultiPrice = selectedDurations.some((duration) => {
+        const field = getDurationPriceField(duration);
+        return Number(formData[field]) <= 0;
+      });
+      if (hasInvalidMultiPrice) {
+        toast.error("Selected duration prices must be greater than 0");
+        return false;
+      }
+    } else if (formData.price <= 0) {
       toast.error("Price must be greater than 0 for paid packages");
       return false;
     }
@@ -185,6 +224,9 @@ const validateForm = (): boolean => {
 
       if (value === "Free") {
         updatedFormData.price = 0;
+        updatedFormData.monthlyPrice = 0;
+        updatedFormData.yearlyPrice = 0;
+        updatedFormData.lifetimePrice = 0;
         updatedFormData.packageCurrency = "";
       }
 
@@ -235,8 +277,15 @@ const validateForm = (): boolean => {
      
       const submissionData = { ...formData };
       const isFreePackage = formData.packageType === "Free";
+      const selectedDurations = !isEditMode
+        ? durationCombinationMap[formData.packageDuration] || []
+        : [];
+      const isMultiDuration = !isEditMode && selectedDurations.length > 1;
       if (isFreePackage) {
         submissionData.price = 0;
+        submissionData.monthlyPrice = 0;
+        submissionData.yearlyPrice = 0;
+        submissionData.lifetimePrice = 0;
         submissionData.packageCurrency = "";
       } else {
         submissionData.packageCurrency = normalizeCurrencyCode(
@@ -245,7 +294,7 @@ const validateForm = (): boolean => {
       }
 
       // Convert camelCase to snake_case for backend
-      const convertedData = {
+      const convertedData: any = {
         title: submissionData.title,
         package_type: submissionData.packageType,
         package_duration: submissionData.packageDuration,
@@ -275,6 +324,15 @@ const validateForm = (): boolean => {
         selected_vip: submissionData.vipAssistant,
         selected_premium: submissionData.premiumAssistant,
       };
+
+      if (isMultiDuration) {
+        const pricingMap: Record<string, number> = {};
+        selectedDurations.forEach((duration) => {
+          const field = getDurationPriceField(duration);
+          pricingMap[duration] = Number(submissionData[field]) || 0;
+        });
+        convertedData.duration_pricing = pricingMap;
+      }
 
       if (isEditMode) {
         await axiosInstance.put(
@@ -525,8 +583,8 @@ const fetchPremiumAssistantList = async () => {
                     ? "Free Package (0)"
                     : "Enter price (e.g., 45647)"
                 }
-                required={!isFreePackage}
-                disabled={isFreePackage}
+                required={!isFreePackage && (isEditMode || !isMultiDurationCreate)}
+                disabled={isFreePackage || isMultiDurationCreate}
               />
             </div>
           </div>
@@ -544,6 +602,10 @@ const fetchPremiumAssistantList = async () => {
                 required
               >
                 <option value="">Select Package Duration</option>
+                {!isEditMode && <option value="Monthly+Yearly">Monthly + Yearly</option>}
+                {!isEditMode && <option value="Monthly+Life-Time">Monthly + Life-Time</option>}
+                {!isEditMode && <option value="Yearly+Life-Time">Yearly + Life-Time</option>}
+                {!isEditMode && <option value="All">Monthly + Yearly + Life-Time</option>}
                 <option value="Monthly">Monthly</option>
                 <option value="Yearly">Yearly</option>
                 <option value="Life-Time">Life-Time</option>
@@ -551,6 +613,37 @@ const fetchPremiumAssistantList = async () => {
             </div>
           </div>
         </div>
+
+        {!isEditMode && isMultiDurationCreate && !isFreePackage && (
+          <div className="row mb-3">
+            {selectedCreateDurations.map((duration) => {
+              const fieldName = getDurationPriceField(duration);
+              const colClass =
+                selectedCreateDurations.length === 2 ? "col-md-6" : "col-md-4";
+              return (
+                <div className={colClass} key={duration}>
+                  <div className="input-filed-item-smart-ai">
+                    <label htmlFor={fieldName} className="form-label">
+                      {duration} Price <span className="required">*</span>
+                    </label>
+                    <input
+                      type="number"
+                      className="form-control"
+                      id={fieldName}
+                      name={fieldName}
+                      value={formData[fieldName] || ""}
+                      onChange={handleNumberChange}
+                      min="0"
+                      step="any"
+                      placeholder={`${duration} price`}
+                      required
+                    />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
 
         <div className="row mb-3">
           <div className="col-md-6">
