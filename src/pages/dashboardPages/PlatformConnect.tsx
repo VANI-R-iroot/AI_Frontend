@@ -54,6 +54,19 @@ interface PromptOption {
   prompt_text?: string;
 }
 
+interface WooVisionResult {
+  id: number;
+  title: string;
+  short_description?: string;
+  score?: number | null;
+  status?: string;
+  created_at?: string | null;
+  woo_product_id?: number | null;
+  woo_product_name?: string;
+  attribute_keys?: string[];
+  publishable?: boolean;
+}
+
 interface PlatformSetupField {
   label: string;
   placeholder: string;
@@ -147,10 +160,23 @@ const PlatformConnectPage: React.FC = () => {
   const [prompts, setPrompts] = useState<PromptOption[]>([]);
   const [selectedPrompt, setSelectedPrompt] = useState<string>("");
   const [selectedProductIds, setSelectedProductIds] = useState<number[]>([]);
+  const [wooVisionResults, setWooVisionResults] = useState<WooVisionResult[]>([]);
+  const [selectedVisionIds, setSelectedVisionIds] = useState<number[]>([]);
   const [selectedPlatform, setSelectedPlatform] = useState<string>("");
   const [connected, setConnected] = useState(false);
   const [config, setConfig] = useState<WooConfigResponse["config"]>(null);
   const [products, setProducts] = useState<WooProduct[]>([]);
+  const [loadingVisionResults, setLoadingVisionResults] = useState(false);
+  const [publishingVisionResults, setPublishingVisionResults] = useState(false);
+  const [showPublishOptions, setShowPublishOptions] = useState(false);
+  const [publishFieldOptions, setPublishFieldOptions] = useState({
+    title: true,
+    short_description: true,
+    long_description: true,
+    keywords: true,
+    attributes: true,
+  });
+  const [selectedAttributeKeys, setSelectedAttributeKeys] = useState<string[]>([]);
   const [form, setForm] = useState({
     storeUrl: "",
     consumerKey: "",
@@ -252,10 +278,31 @@ const PlatformConnectPage: React.FC = () => {
     }
   };
 
+  const loadWooVisionResults = async () => {
+    setLoadingVisionResults(true);
+    try {
+      const res = await axiosInstance.get("/integrations/woocommerce/vision-results");
+      const list = (res.data?.data || []) as WooVisionResult[];
+      setWooVisionResults(list);
+      setSelectedVisionIds((prev) =>
+        prev.filter((id) => list.some((row) => Number(row.id) === Number(id)))
+      );
+    } catch (error: any) {
+      notifyError(getErrorMessage(error, "Failed to load generated results"));
+    } finally {
+      setLoadingVisionResults(false);
+    }
+  };
+
   const loadData = async () => {
     setLoading(true);
     try {
-      await Promise.all([loadPlatformData(), loadWooConfig(), loadPrompts()]);
+      await Promise.all([
+        loadPlatformData(),
+        loadWooConfig(),
+        loadPrompts(),
+        loadWooVisionResults(),
+      ]);
     } catch (error: any) {
       notifyError(getErrorMessage(error, "Failed to load platform data"));
     } finally {
@@ -415,6 +462,126 @@ const PlatformConnectPage: React.FC = () => {
       notifyError(getErrorMessage(error, "Failed to send products to AI Vision"));
     } finally {
       setImportingToVision(false);
+    }
+  };
+
+  const publishableVisionIds = useMemo(
+    () =>
+      wooVisionResults
+        .filter((row) => Boolean(row.publishable))
+        .map((row) => Number(row.id))
+        .filter((id) => !Number.isNaN(id)),
+    [wooVisionResults]
+  );
+
+  const toggleSelectAllVisionResults = () => {
+    if (publishableVisionIds.length === 0) return;
+    if (selectedVisionIds.length === publishableVisionIds.length) {
+      setSelectedVisionIds([]);
+      return;
+    }
+    setSelectedVisionIds(publishableVisionIds);
+  };
+
+  const toggleSelectVisionResult = (visionId: number) => {
+    setSelectedVisionIds((prev) =>
+      prev.includes(visionId)
+        ? prev.filter((id) => id !== visionId)
+        : [...prev, visionId]
+    );
+  };
+
+  const selectedVisionRows = useMemo(
+    () =>
+      wooVisionResults.filter((row) =>
+        selectedVisionIds.includes(Number(row.id))
+      ),
+    [wooVisionResults, selectedVisionIds]
+  );
+
+  const selectedVisionAttributeKeys = useMemo(
+    () =>
+      Array.from(
+        new Set(
+          selectedVisionRows.flatMap((row) =>
+            Array.isArray(row.attribute_keys) ? row.attribute_keys : []
+          )
+        )
+      ),
+    [selectedVisionRows]
+  );
+
+  const togglePublishOption = (
+    key: "title" | "short_description" | "long_description" | "keywords" | "attributes"
+  ) => {
+    setPublishFieldOptions((prev) => ({ ...prev, [key]: !prev[key] }));
+  };
+
+  const toggleAttributeKey = (key: string) => {
+    setSelectedAttributeKeys((prev) =>
+      prev.includes(key) ? prev.filter((item) => item !== key) : [...prev, key]
+    );
+  };
+
+  const handlePublishSelectedVisionResults = async () => {
+    if (selectedVisionIds.length === 0) {
+      notifyWarning("Select at least one generated result to publish");
+      return;
+    }
+
+    const hasAtLeastOneField = Object.values(publishFieldOptions).some(Boolean);
+    if (!hasAtLeastOneField) {
+      notifyWarning("Select at least one field to publish");
+      return;
+    }
+
+    if (
+      publishFieldOptions.attributes &&
+      selectedVisionAttributeKeys.length > 0 &&
+      selectedAttributeKeys.length === 0
+    ) {
+      notifyWarning("Select at least one attribute key or disable attributes");
+      return;
+    }
+
+    setPublishingVisionResults(true);
+    try {
+      let successCount = 0;
+      let failedCount = 0;
+
+      for (const visionId of selectedVisionIds) {
+        try {
+          await axiosInstance.post(
+            `/integrations/woocommerce/vision/publish/${visionId}`,
+            {
+              fields: publishFieldOptions,
+              attribute_keys: publishFieldOptions.attributes
+                ? selectedAttributeKeys
+                : [],
+            }
+          );
+          successCount += 1;
+        } catch {
+          failedCount += 1;
+        }
+      }
+
+      if (successCount > 0) {
+        notifySuccess(
+          `Published ${successCount} item${successCount > 1 ? "s" : ""} to WooCommerce`
+        );
+      }
+      if (failedCount > 0) {
+        notifyWarning(
+          `${failedCount} item${failedCount > 1 ? "s" : ""} failed to publish`
+        );
+      }
+
+      setSelectedVisionIds([]);
+      setSelectedAttributeKeys([]);
+      await loadWooVisionResults();
+    } finally {
+      setPublishingVisionResults(false);
     }
   };
 
@@ -643,6 +810,15 @@ const PlatformConnectPage: React.FC = () => {
 
               <button
                 type="button"
+                className="pc-btn"
+                disabled={loadingVisionResults}
+                onClick={loadWooVisionResults}
+              >
+                {loadingVisionResults ? "Refreshing..." : "Refresh Generated Results"}
+              </button>
+
+              <button
+                type="button"
                 className="pc-btn pc-btn-danger"
                 disabled={!connected || disconnecting}
                 onClick={handleDisconnect}
@@ -739,6 +915,224 @@ const PlatformConnectPage: React.FC = () => {
               </div>
             </div>
           )}
+
+          <div className="pc-products">
+            <h4>
+              Generated Results ({wooVisionResults.length}) - Selected ({selectedVisionIds.length})
+            </h4>
+            <div className="pc-actions" style={{ marginBottom: "10px" }}>
+              <button
+                type="button"
+                className="pc-btn"
+                disabled={publishableVisionIds.length === 0}
+                onClick={toggleSelectAllVisionResults}
+              >
+                {selectedVisionIds.length === publishableVisionIds.length &&
+                publishableVisionIds.length > 0
+                  ? "Deselect All"
+                  : "Select All Publishable"}
+              </button>
+              <button
+                type="button"
+                className="pc-btn pc-btn-primary"
+                disabled={selectedVisionIds.length === 0 || publishingVisionResults}
+                onClick={handlePublishSelectedVisionResults}
+              >
+                {publishingVisionResults ? "Publishing..." : "Publish Selected"}
+              </button>
+              <button
+                type="button"
+                className="pc-btn"
+                onClick={() => {
+                  setShowPublishOptions((prev) => {
+                    const next = !prev;
+                    if (next) {
+                      setSelectedAttributeKeys(selectedVisionAttributeKeys);
+                    }
+                    return next;
+                  });
+                }}
+              >
+                Publish Options
+              </button>
+            </div>
+            {showPublishOptions && (
+              <div
+                style={{
+                  border: "1px solid rgba(148, 163, 184, 0.25)",
+                  borderRadius: "10px",
+                  padding: "12px",
+                  marginBottom: "10px",
+                }}
+              >
+                <div style={{ fontSize: "12px", marginBottom: "8px", opacity: 0.85 }}>
+                  Choose generated fields to publish
+                </div>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: "12px", marginBottom: "10px" }}>
+                  <label>
+                    <input
+                      type="checkbox"
+                      checked={publishFieldOptions.title}
+                      onChange={() => togglePublishOption("title")}
+                    />{" "}
+                    Title
+                  </label>
+                  <label>
+                    <input
+                      type="checkbox"
+                      checked={publishFieldOptions.short_description}
+                      onChange={() => togglePublishOption("short_description")}
+                    />{" "}
+                    Short Description
+                  </label>
+                  <label>
+                    <input
+                      type="checkbox"
+                      checked={publishFieldOptions.long_description}
+                      onChange={() => togglePublishOption("long_description")}
+                    />{" "}
+                    Long Description
+                  </label>
+                  <label>
+                    <input
+                      type="checkbox"
+                      checked={publishFieldOptions.keywords}
+                      onChange={() => togglePublishOption("keywords")}
+                    />{" "}
+                    Keywords
+                  </label>
+                  <label>
+                    <input
+                      type="checkbox"
+                      checked={publishFieldOptions.attributes}
+                      onChange={() => togglePublishOption("attributes")}
+                    />{" "}
+                    Attributes
+                  </label>
+                </div>
+
+                {publishFieldOptions.attributes && selectedVisionAttributeKeys.length > 0 && (
+                  <div>
+                    <div style={{ fontSize: "12px", marginBottom: "6px", opacity: 0.85 }}>
+                      Select attribute keys
+                    </div>
+                    <div style={{ display: "flex", gap: "8px", marginBottom: "8px" }}>
+                      <button
+                        type="button"
+                        className="pc-btn"
+                        onClick={() => setSelectedAttributeKeys(selectedVisionAttributeKeys)}
+                      >
+                        All
+                      </button>
+                      <button
+                        type="button"
+                        className="pc-btn"
+                        onClick={() => setSelectedAttributeKeys([])}
+                      >
+                        Clear
+                      </button>
+                    </div>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}>
+                      {selectedVisionAttributeKeys.map((key) => (
+                        <label key={key}>
+                          <input
+                            type="checkbox"
+                            checked={selectedAttributeKeys.includes(key)}
+                            onChange={() => toggleAttributeKey(key)}
+                          />{" "}
+                          {key}
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+            <div className="pc-products-table-wrap">
+              <table className="pc-products-table">
+                <thead>
+                  <tr>
+                    <th>
+                      <input
+                        type="checkbox"
+                        checked={
+                          publishableVisionIds.length > 0 &&
+                          selectedVisionIds.length === publishableVisionIds.length
+                        }
+                        onChange={toggleSelectAllVisionResults}
+                      />
+                    </th>
+                    <th>ID</th>
+                    <th>Title</th>
+                    <th>Woo Product</th>
+                    <th>Score</th>
+                    <th>Status</th>
+                    <th>Generated On</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {wooVisionResults.length === 0 ? (
+                    <tr>
+                      <td colSpan={7} style={{ textAlign: "center" }}>
+                        No generated WooCommerce results found.
+                      </td>
+                    </tr>
+                  ) : (
+                    wooVisionResults.map((row) => {
+                      const id = Number(row.id);
+                      const canPublish = Boolean(row.publishable);
+                      return (
+                        <tr key={id}>
+                          <td>
+                            <input
+                              type="checkbox"
+                              disabled={!canPublish}
+                              checked={selectedVisionIds.includes(id)}
+                              onChange={() => toggleSelectVisionResult(id)}
+                            />
+                          </td>
+                          <td>{id}</td>
+                          <td>
+                            {row.title || "-"}
+                            {row.short_description ? (
+                              <p style={{ margin: "4px 0 0 0", opacity: 0.75 }}>
+                                {row.short_description.length > 90
+                                  ? `${row.short_description.slice(0, 90)}...`
+                                  : row.short_description}
+                              </p>
+                            ) : null}
+                          </td>
+                          <td>
+                            {row.woo_product_id ? (
+                              <>
+                                #{row.woo_product_id}
+                                {row.woo_product_name ? ` - ${row.woo_product_name}` : ""}
+                              </>
+                            ) : (
+                              "-"
+                            )}
+                          </td>
+                          <td>{row.score ?? "-"}</td>
+                          <td>{row.status || "-"}</td>
+                          <td>
+                            {row.created_at
+                              ? new Date(row.created_at).toLocaleString("en-US", {
+                                  day: "2-digit",
+                                  month: "short",
+                                  year: "numeric",
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                })
+                              : "-"}
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       ) : (
         <div className="platform-connect-panel">

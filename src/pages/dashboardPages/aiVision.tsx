@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+﻿import React, { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import adminImage from "../../assets/image/admin/allImage";
 import ShortLink from "../../common/ShortLinkDashboard";
@@ -14,11 +14,13 @@ import ReactMarkdown from "react-markdown";
 import { FiArrowLeft, FiEdit } from "react-icons/fi";
 
 interface FileRow {
+  id?: string | number;
   _id: string;
   text: string;
   timestamp: string;
   score?: number | null;
   status?: string;
+  platform_type?: string;
   vision_image_url?: string | null;
   image_path?: string;
 }
@@ -55,6 +57,8 @@ const AiVisionPage = () => {
   const [exportFilter, setExportFilter] = useState("recent");
   const [statusFilter, setStatusFilter] = useState("all");
   const [showHistoryExport, setShowHistoryExport] = useState(false);
+  const [showHistoryPublish, setShowHistoryPublish] = useState(false);
+  const [isPublishingSelected, setIsPublishingSelected] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [excelFile, setExcelFile] = useState<File | null>(null);
   const [bulkResults, setBulkResults] = useState<any[]>([]);
@@ -85,6 +89,14 @@ const AiVisionPage = () => {
     to: "",
   });
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  const [publishFieldOptions, setPublishFieldOptions] = useState({
+    title: true,
+    short_description: true,
+    long_description: true,
+    keywords: true,
+    attributes: true,
+  });
+  const [selectedAttributeKeys, setSelectedAttributeKeys] = useState<string[]>([]);
 
   // Add ESC key support for modal
   useEffect(() => {
@@ -390,7 +402,7 @@ const AiVisionPage = () => {
 
   // Poll for Excel bulk results
   useEffect(() => {
-    console.log("🔍 Polling useEffect triggered:", {
+    console.log(" Polling useEffect triggered:", {
       isBulkMode,
       selectedPrompt,
       currentSessionId,
@@ -398,16 +410,16 @@ const AiVisionPage = () => {
     });
 
     if (!isBulkMode || !selectedPrompt) {
-      console.log("⏸️ Polling not started - missing isBulkMode or selectedPrompt");
+      console.log(" Polling not started - missing isBulkMode or selectedPrompt");
       return;
     }
 
-    console.log("🔄 Starting polling interval...");
+    console.log(" Starting polling interval...");
     setIsProcessingBulk(true);
 
     const interval = setInterval(async () => {
       try {
-        console.log("📡 Polling for bulk results...");
+        console.log(" Polling for bulk results...");
         
         const params: any = {
           prompt_id: selectedPrompt
@@ -415,19 +427,19 @@ const AiVisionPage = () => {
         
         if (currentSessionId) {
           params.bulkSessionId = currentSessionId;
-          console.log("📋 Using session ID:", currentSessionId);
+          console.log(" Using session ID:", currentSessionId);
         }
 
-        console.log("📤 Request params:", params);
+        console.log(" Request params:", params);
 
         const res = await axiosInstance.get("/vision/bulk/results", { params });
         
-        console.log("✅ Polling response received");
+        console.log(" Polling response received");
         console.log("Response data:", res.data);
 
         if (res.data?.success !== false) {
           const results = res.data?.data || [];
-          console.log(`📊 Got ${results.length} results from backend`);
+          console.log(` Got ${results.length} results from backend`);
           console.log("Sample result:", results[0]);
           
           if (results.length > 0) {
@@ -464,27 +476,27 @@ const AiVisionPage = () => {
             item.analysis_status === "pending"
           ).length;
           
-          console.log(`⏳ ${pendingCount} images still pending`);
+          console.log(` ${pendingCount} images still pending`);
 
           if (pendingCount === 0 && results.length > 0) {
-            console.log("✅ All processing complete!");
+            console.log(" All processing complete!");
             setIsProcessingBulk(false);
             clearInterval(interval);
             refreshUserUsage();
-            toast.success(`✅ Processed ${results.length} images!`);
+            toast.success(` Processed ${results.length} images!`);
           } else if (results.length === 0) {
-            console.log("📭 No results yet, continue polling...");
+            console.log(" No results yet, continue polling...");
           }
         } else {
-          console.error("❌ Backend returned error:", res.data);
+          console.error(" Backend returned error:", res.data);
         }
       } catch (err: any) {
-        console.error("❌ Bulk polling error:", err);
+        console.error(" Bulk polling error:", err);
         console.error("Error status:", err?.response?.status);
         console.error("Error data:", err?.response?.data);
         
         if (err?.response?.status === 404) {
-          console.error("⚠️ Endpoint /vision/bulk/results not found!");
+          console.error(" Endpoint /vision/bulk/results not found!");
           setIsProcessingBulk(false);
           clearInterval(interval);
           toast.error("Backend endpoint not found. Check server logs.");
@@ -493,14 +505,14 @@ const AiVisionPage = () => {
     }, 4000);
 
     const timeout = setTimeout(() => {
-      console.log("⏰ Polling timeout after 10 minutes");
+      console.log(" Polling timeout after 10 minutes");
       clearInterval(interval);
       setIsProcessingBulk(false);
-      toast.warning("⏰ Processing timeout - please check your network connection");
+      toast.warning(" Processing timeout - please check your network connection");
     }, 10 * 60 * 1000);
 
     return () => {
-      console.log("🧹 Cleaning up polling interval");
+      console.log(" Cleaning up polling interval");
       clearInterval(interval);
       clearTimeout(timeout);
     };
@@ -510,14 +522,14 @@ const AiVisionPage = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    console.log("🎯 Submit clicked:", {
+    console.log(" Submit clicked:", {
       excelFile: excelFile?.name,
       imageFile: imageFile?.name,
       selectedPrompt,
       isProcessingBulk
     });
 
-    // 🔴 PREVENT MULTIPLE SUBMISSIONS
+    //  PREVENT MULTIPLE SUBMISSIONS
     if (isCheckingOnboarding) {
       toast.info("Checking company onboarding status...");
       return;
@@ -545,7 +557,7 @@ const AiVisionPage = () => {
 
     // ========== SINGLE IMAGE PROCESSING ==========
     if (imageFile) {
-      console.log("📤 Preparing single image upload...");
+      console.log(" Preparing single image upload...");
       
       const formData = new FormData();
       formData.append("image", imageFile);
@@ -553,7 +565,7 @@ const AiVisionPage = () => {
       formData.append("language", language);
 
       // Log FormData contents
-      console.log("📦 FormData entries:");
+      console.log(" FormData entries:");
       for (let pair of (formData as any).entries()) {
         console.log(pair[0] + ': ', pair[1]);
       }
@@ -569,14 +581,14 @@ const AiVisionPage = () => {
       setResultStatus(null);
 
       try {
-        console.log("🚀 Sending request to /vision/analyze");
+        console.log(" Sending request to /vision/analyze");
         const res = await axiosInstance.post("/vision/analyze", formData, {
           headers: {
             'Content-Type': 'multipart/form-data',
           }
         });
 
-        console.log("✅ Backend response:", res.data);
+        console.log(" Backend response:", res.data);
 
         if (res.data?.data) {
           const generatedId = res.data.data.id?.toString();
@@ -594,7 +606,7 @@ const AiVisionPage = () => {
           toast.error("No result found.");
         }
       } catch (error: any) {
-        console.error("❌ Single image error:", error);
+        console.error(" Single image error:", error);
         console.error("Error response:", error?.response?.data);
         toast.error(
           error?.response?.data?.message ||
@@ -610,7 +622,7 @@ const AiVisionPage = () => {
 
     // ========== BULK EXCEL PROCESSING ==========
     if (excelFile) {
-      console.log("🚀 Starting bulk Excel processing...");
+      console.log(" Starting bulk Excel processing...");
       
       const formData = new FormData();
       formData.append("excel", excelFile);
@@ -628,7 +640,7 @@ const AiVisionPage = () => {
       setIsProcessingBulk(true);
       setIsProcessingSingle(false);
 
-      console.log("📤 Sending request to /vision/bulk/analyze");
+      console.log(" Sending request to /vision/bulk/analyze");
 
       try {
         const res = await axiosInstance.post("/vision/bulk/analyze", formData, {
@@ -637,13 +649,13 @@ const AiVisionPage = () => {
           }
         });
         
-        console.log("✅ Backend response:", res.data);
+        console.log(" Backend response:", res.data);
 
         if (res.data?.bulkSessionId) {
-          console.log("📝 Got session ID:", res.data.bulkSessionId);
+          console.log(" Got session ID:", res.data.bulkSessionId);
           setCurrentSessionId(res.data.bulkSessionId);
         } else {
-          console.warn("⚠️ No session ID in response");
+          console.warn(" No session ID in response");
         }
 
         if (res.data?.bulkResults || res.data?.data) {
@@ -652,22 +664,22 @@ const AiVisionPage = () => {
             id: item.id || item._id || item.image_path,
           }));
 
-          console.log(`📊 Setting ${bulkWithIds.length} initial results`);
+          console.log(` Setting ${bulkWithIds.length} initial results`);
           setBulkResults(bulkWithIds);
           
           toast.success(`Bulk analysis queued! ${res.data.totalQueued || bulkWithIds.length} images are being processed.`);
           setActiveTab("Results");
           
-          console.log("🎉 Bulk processing started successfully");
+          console.log(" Bulk processing started successfully");
           return;
         } else {
-          console.error("❌ No bulkResults or data in response");
+          console.error(" No bulkResults or data in response");
           toast.error("Failed to start bulk analysis");
           setIsProcessingBulk(false);
           setIsBulkMode(false);
         }
       } catch (error: any) {
-        console.error("❌ Bulk submission error:", error);
+        console.error(" Bulk submission error:", error);
         console.error("Error details:", error?.response?.data);
         toast.error(
           error?.response?.data?.message ||
@@ -749,6 +761,131 @@ const AiVisionPage = () => {
     setSelectedIds((prev) =>
       prev.includes(fileId) ? prev.filter((id) => id !== fileId) : [...prev, fileId]
     );
+  };
+
+  const extractAttributeKeysFromText = (text: string): string[] => {
+    if (!text) return [];
+    const sectionMatch = text.match(
+      /(?:^|\n)#{2,3}\s*Attributes\s*\n([\s\S]*?)(?=\n#{2,3}\s|\Z)/i
+    );
+    const sectionText = sectionMatch?.[1] || text;
+
+    const keys = sectionText
+      .split("\n")
+      .map((line) => line.trim())
+      .filter(Boolean)
+      .map((line) => {
+        const cleaned = line.replace(/^\s*[-*]\s*/, "").trim();
+
+        const markdownKey = cleaned.match(/^\*{1,2}\s*([^*:\n]+?)\s*\*{1,2}\s*:/);
+        if (markdownKey?.[1]) return markdownKey[1].trim();
+
+        const plainKey = cleaned.match(/^([^:\n]+?)\s*:/);
+        if (plainKey?.[1]) return plainKey[1].replace(/\*/g, "").trim();
+
+        return "";
+      })
+      .filter(Boolean);
+
+    return Array.from(new Set(keys));
+  };
+
+  const selectedHistoryRows = imgToTextData.filter((row) =>
+    selectedIds.includes(row._id)
+  );
+
+  const selectedWooHistoryRows = selectedHistoryRows.filter(
+    (row) => String(row.platform_type || "").toLowerCase() === "woocommerce"
+  );
+  const selectedNonWooHistoryRows = selectedHistoryRows.filter(
+    (row) => String(row.platform_type || "").toLowerCase() !== "woocommerce"
+  );
+
+  const selectedHistoryAttributeKeys = Array.from(
+    new Set(
+      selectedWooHistoryRows.flatMap((row) =>
+        extractAttributeKeysFromText(row.text || "")
+      )
+    )
+  );
+
+  const toggleAttributeKey = (key: string) => {
+    setSelectedAttributeKeys((prev) =>
+      prev.includes(key) ? prev.filter((item) => item !== key) : [...prev, key]
+    );
+  };
+
+  const handleTogglePublishOption = (
+    key: "title" | "short_description" | "long_description" | "keywords" | "attributes"
+  ) => {
+    setPublishFieldOptions((prev) => ({ ...prev, [key]: !prev[key] }));
+  };
+
+  const handlePublishSelected = async () => {
+    if (selectedIds.length === 0) {
+      toast.error("Please select records to publish");
+      return;
+    }
+
+    if (selectedWooHistoryRows.length === 0) {
+      toast.error("No WooCommerce-linked records selected for publish");
+      return;
+    }
+
+    if (selectedWooHistoryRows.length > 0 && selectedNonWooHistoryRows.length > 0) {
+      toast.error("Please select only WooCommerce-linked records to publish");
+      return;
+    }
+
+    const hasAtLeastOneField = Object.values(publishFieldOptions).some(Boolean);
+    if (!hasAtLeastOneField) {
+      toast.error("Select at least one generated field to publish");
+      return;
+    }
+
+    if (
+      publishFieldOptions.attributes &&
+      selectedHistoryAttributeKeys.length > 0 &&
+      selectedAttributeKeys.length === 0
+    ) {
+      toast.error("Select at least one attribute key or disable attributes");
+      return;
+    }
+
+    setIsPublishingSelected(true);
+
+    let successCount = 0;
+    let failedCount = 0;
+
+    try {
+      for (const row of selectedWooHistoryRows) {
+        try {
+          await axiosInstance.post(
+            `/integrations/woocommerce/vision/publish/${row._id}`,
+            {
+            fields: publishFieldOptions,
+            attribute_keys: publishFieldOptions.attributes
+              ? selectedAttributeKeys
+              : [],
+            }
+          );
+          successCount += 1;
+        } catch {
+          failedCount += 1;
+        }
+      }
+
+      if (successCount > 0) {
+        toast.success(`Published ${successCount} record(s) successfully`);
+      }
+      if (failedCount > 0) {
+        toast.warning(`${failedCount} record(s) failed to publish`);
+      }
+
+      setShowHistoryPublish(false);
+    } finally {
+      setIsPublishingSelected(false);
+    }
   };
 
   const handleExportSelected = async (format: string) => {
@@ -835,7 +972,7 @@ const AiVisionPage = () => {
   const extractLongDescription = (text: string): string => {
     if (!text) return "";
 
-    console.log("🔍 Extracting Long Description from text length:", text.length);
+    console.log(" Extracting Long Description from text length:", text.length);
     
     // CRITICAL: Try to extract the pure description content, not the entire formatted response
     
@@ -844,7 +981,7 @@ const AiVisionPage = () => {
       const start = text.indexOf("## Long Description") + "## Long Description".length;
       const end = text.indexOf("## Keywords");
       const extracted = text.substring(start, end).trim();
-      console.log("✅ Extracted between headers, length:", extracted.length);
+      console.log(" Extracted between headers, length:", extracted.length);
       
       // Remove leading markdown and clean up
       return extracted.replace(/^#+\s+/gm, '').trim();
@@ -863,7 +1000,7 @@ const AiVisionPage = () => {
         extracted = extracted.substring(0, extracted.indexOf("Attributes"));
       }
       
-      console.log("✅ Extracted from Long Description header, length:", extracted.length);
+      console.log(" Extracted from Long Description header, length:", extracted.length);
       return extracted.replace(/^#+\s+/gm, '').trim();
     }
 
@@ -885,12 +1022,12 @@ const AiVisionPage = () => {
         extracted = extracted.substring(0, minIdx);
       }
       
-      console.log("✅ Extracted from Long Description label, length:", extracted.length);
+      console.log(" Extracted from Long Description label, length:", extracted.length);
       return extracted.trim();
     }
 
     // Fallback: Return the text as-is, but cleaned
-    console.log("⚠️ No Long Description marker found, returning cleaned text");
+    console.log(" No Long Description marker found, returning cleaned text");
     return text.replace(/^#+\s+/gm, '').trim();
   };
 
@@ -1350,12 +1487,12 @@ const AiVisionPage = () => {
                         <div className="mt-2">
                           <div className="alert alert-info p-2 d-flex justify-content-between align-items-center">
                             <span>
-                              📊 Excel file selected: <strong>{excelFile.name}</strong>
+                              Excel file selected: <strong>{excelFile.name}</strong>
                               <br />
                               <small>
                                 {currentSessionId ? (
                                   <>
-                                    Session: <code>{currentSessionId.substring(0, 10)}...</code> • 
+                                    Session: <code>{currentSessionId.substring(0, 10)}...</code>  
                                     Click "Generate" to start
                                   </>
                                 ) : (
@@ -1433,7 +1570,7 @@ const AiVisionPage = () => {
                             isProcessingSingle
                           }
                         >
-                          <span className="btn-icon">✨</span>
+                          <span className="btn-icon">*</span>
                             {isCheckingOnboarding
                               ? "Checking..."
                               : isProcessingSingle || isProcessingBulk
@@ -1543,7 +1680,7 @@ const AiVisionPage = () => {
                             onClick={() => setEditMode(!editMode)}
                             title={editMode ? "View Mode" : "Edit Text"}
                           >
-                            {editMode ? "👁️" : <FiEdit />}
+                            {editMode ? "View" : <FiEdit />}
                           </button>
                         )}
                       </div>
@@ -1658,7 +1795,7 @@ const AiVisionPage = () => {
                                               border: "1px solid #10b981"
                                             }}
                                           >
-                                            ✔ Approve
+                                            Approve
                                           </button>
                                           <button
                                             className="btn btn-sm btn-danger"
@@ -1671,7 +1808,7 @@ const AiVisionPage = () => {
                                               border: "1px solid #ef4444"
                                             }}
                                           >
-                                            ✘ Reject
+                                            Reject
                                           </button>
                                         </div>
                                       )}
@@ -1693,11 +1830,11 @@ const AiVisionPage = () => {
                                             }}
                                             onClick={() => {
                                               console.log('Image item:', item);
-                                              console.log('🖼️ image_path:', item.image_path);
+                                              console.log(' image_path:', item.image_path);
                                               if (item.image_path) {
                                                 setSelectedImage(item.image_path);
                                               } else {
-                                                console.log('⚠️ image_path is missing, trying to fetch latest data');
+                                                console.log(' image_path is missing, trying to fetch latest data');
                                                 toast.warning("Image path not available");
                                               }
                                             }}
@@ -1722,7 +1859,7 @@ const AiVisionPage = () => {
                                                     fallback.style.background = "#374151";
                                                     fallback.innerHTML = `
                                                       <div class="text-center">
-                                                        <div style="color: #9ca3af; font-size: 24px;">🖼️</div>
+                                                        <div style="color: #9ca3af; font-size: 24px;">Image</div>
                                                         <small class="text-muted d-block mt-1">Preview</small>
                                                       </div>
                                                     `;
@@ -1733,7 +1870,7 @@ const AiVisionPage = () => {
                                             ) : (
                                               <div className="w-100 h-100 d-flex align-items-center justify-content-center" style={{ background: "#374151" }}>
                                                 <div className="text-center">
-                                                  <div style={{ color: "#9ca3af", fontSize: "24px" }}>📷</div>
+                                                  <div style={{ color: "#9ca3af", fontSize: "24px" }}>Image</div>
                                                   <small className="text-muted d-block mt-1">No Image</small>
                                                 </div>
                                               </div>
@@ -1808,7 +1945,7 @@ const AiVisionPage = () => {
                                             }}
                                             title="Edit this result"
                                           >
-                                            ✎ Edit
+                                            Edit
                                           </button>
                                         )}
                                       </div>
@@ -1846,7 +1983,7 @@ const AiVisionPage = () => {
                                                 className="btn btn-sm btn-success"
                                                 onClick={handleSaveHistoryEdit}
                                               >
-                                                💾 Save Changes
+                                                Save Changes
                                               </button>
                                               <button
                                                 className="btn btn-sm btn-secondary"
@@ -1866,7 +2003,7 @@ const AiVisionPage = () => {
                                           </div>
                                         ) : item.analysis_status === 'rejected' && !item.text && !item.long_description ? (
                                           <div className="text-center py-4" style={{ color: "#f87171" }}>
-                                            ❌ Processing failed. Re-generate or try again.
+                                             Processing failed. Re-generate or try again.
                                           </div>
                                         ) : (
                                           <div style={{ color: "#e2e8f0", whiteSpace: "pre-wrap", wordWrap: "break-word" }}>
@@ -1942,7 +2079,7 @@ const AiVisionPage = () => {
                                   className="btn btn-sm btn-success"
                                   onClick={handleSaveSingleResult}
                                 >
-                                  💾 Save Changes
+                                  Save Changes
                                 </button>
                                 <button
                                   className="btn btn-sm btn-secondary"
@@ -2029,7 +2166,7 @@ const AiVisionPage = () => {
                             disabled={resultStatus === "approved"}
                             title={resultStatus === "approved" ? "Already approved" : "Approve this result"}
                           >
-                            ✔ Approve
+                            Approve
                           </button>
                           <button
                             className="btn btn-danger btn-sm flex-grow-1"
@@ -2037,7 +2174,7 @@ const AiVisionPage = () => {
                             disabled={resultStatus === "rejected"}
                             title={resultStatus === "rejected" ? "Already rejected" : "Reject this result"}
                           >
-                            ✘ Reject
+                            Reject
                           </button>
                         </div>
                       )}
@@ -2048,7 +2185,7 @@ const AiVisionPage = () => {
             </>
           ) : (
             <>
-              {/* ✅ HISTORY TABLE UI */}
+              {/* HISTORY TABLE UI */}
               <div className="history-table-wrapper">
                 {/* TOP CONTROLS */}
                   <div
@@ -2135,6 +2272,150 @@ const AiVisionPage = () => {
                         </ul>
                       )}
                     </div>
+
+                    <div style={{ position: "relative" }}>
+                      <button
+                        className="btn btn-light btn-sm"
+                        disabled={selectedIds.length === 0}
+                        onClick={() => {
+                          setShowHistoryPublish((prev) => {
+                            const next = !prev;
+                            if (next) {
+                              setSelectedAttributeKeys(selectedHistoryAttributeKeys);
+                            }
+                            return next;
+                          });
+                        }}
+                      >
+                        Publish Selected ({selectedIds.length})
+                        </button>
+
+                      {showHistoryPublish && (
+                        <div
+                          className="dropdown-menu show"
+                          style={{
+                            position: "absolute",
+                            top: "100%",
+                            right: 0,
+                            display: "block",
+                            zIndex: 1000,
+                            minWidth: "320px",
+                            padding: "10px",
+                          }}
+                        >
+                          <div style={{ fontSize: "12px", marginBottom: "8px", opacity: 0.8 }}>
+                            WooCommerce selected: {selectedWooHistoryRows.length} of {selectedIds.length}
+                          </div>
+                          <div style={{ fontSize: "12px", fontWeight: 600, marginBottom: "8px" }}>
+                            Select generated fields to publish
+                          </div>
+
+                          <label className="dropdown-item" style={{ cursor: "pointer" }}>
+                            <input
+                              type="checkbox"
+                              checked={publishFieldOptions.title}
+                              onChange={() => handleTogglePublishOption("title")}
+                            />{" "}
+                            Title
+                          </label>
+                          <label className="dropdown-item" style={{ cursor: "pointer" }}>
+                            <input
+                              type="checkbox"
+                              checked={publishFieldOptions.short_description}
+                              onChange={() => handleTogglePublishOption("short_description")}
+                            />{" "}
+                            Short Description
+                          </label>
+                          <label className="dropdown-item" style={{ cursor: "pointer" }}>
+                            <input
+                              type="checkbox"
+                              checked={publishFieldOptions.long_description}
+                              onChange={() => handleTogglePublishOption("long_description")}
+                            />{" "}
+                            Long Description
+                          </label>
+                          <label className="dropdown-item" style={{ cursor: "pointer" }}>
+                            <input
+                              type="checkbox"
+                              checked={publishFieldOptions.keywords}
+                              onChange={() => handleTogglePublishOption("keywords")}
+                            />{" "}
+                            Keywords
+                          </label>
+                          <label className="dropdown-item" style={{ cursor: "pointer" }}>
+                            <input
+                              type="checkbox"
+                              checked={publishFieldOptions.attributes}
+                              onChange={() => handleTogglePublishOption("attributes")}
+                            />{" "}
+                            Attributes
+                          </label>
+
+                          {publishFieldOptions.attributes && selectedHistoryAttributeKeys.length > 0 && (
+                            <div
+                              style={{
+                                marginTop: "8px",
+                                borderTop: "1px solid rgba(255,255,255,0.08)",
+                                paddingTop: "8px",
+                                maxHeight: "160px",
+                                overflowY: "auto",
+                              }}
+                            >
+                              <div style={{ fontSize: "12px", marginBottom: "6px" }}>
+                                Select attribute keys
+                              </div>
+                              <div style={{ display: "flex", gap: "6px", marginBottom: "6px" }}>
+                                <button
+                                  type="button"
+                                  className="btn btn-sm btn-outline-light"
+                                  onClick={() => setSelectedAttributeKeys(selectedHistoryAttributeKeys)}
+                                >
+                                  All
+                                </button>
+                                <button
+                                  type="button"
+                                  className="btn btn-sm btn-outline-light"
+                                  onClick={() => setSelectedAttributeKeys([])}
+                                >
+                                  Clear
+                                </button>
+                              </div>
+                              {selectedHistoryAttributeKeys.map((key) => (
+                                <label
+                                  key={key}
+                                  className="dropdown-item"
+                                  style={{ cursor: "pointer" }}
+                                >
+                                  <input
+                                    type="checkbox"
+                                    checked={selectedAttributeKeys.includes(key)}
+                                    onChange={() => toggleAttributeKey(key)}
+                                  />{" "}
+                                  {key}
+                                </label>
+                              ))}
+                            </div>
+                          )}
+
+                          <div style={{ marginTop: "10px", display: "flex", gap: "8px" }}>
+                            <button
+                              className="btn btn-sm btn-primary"
+                              onClick={handlePublishSelected}
+                              disabled={isPublishingSelected}
+                            >
+                              {isPublishingSelected ? "Publishing..." : "Publish"}
+                            </button>
+                            <button
+                              className="btn btn-sm btn-secondary"
+                              onClick={() => setShowHistoryPublish(false)}
+                              disabled={isPublishingSelected}
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
                     
                     <button 
                       className="btn btn-light btn-sm" 
@@ -2151,7 +2432,7 @@ const AiVisionPage = () => {
                         onClick={() => setShowBulkRegenerateMenu(!showBulkRegenerateMenu)}
                         title="Regenerate rejected items"
                       >
-                        {isProcessingBulk ? "Processing..." : "Bulk Actions ▼"}
+                        {isProcessingBulk ? "Processing..." : "Bulk Actions"}
                       </button>
 
                       {showBulkRegenerateMenu && (
@@ -2324,7 +2605,6 @@ const AiVisionPage = () => {
                               style={{ cursor: "pointer" }}
                               onClick={() => handleFileSelect(file._id)}
                             >
-                              📄{" "}
                               {file.text.length > 50
                                 ? file.text.substring(0, 50) + "..."
                                 : file.text}
@@ -2341,7 +2621,7 @@ const AiVisionPage = () => {
                                     fontWeight: 700,
                                   }}
                                 >
-                                  ● {file.score}%
+                                  {file.score}%
                                 </span>
                               )}
                             </td>
@@ -2364,10 +2644,10 @@ const AiVisionPage = () => {
                                 
                                 if (status === "approved") {
                                   bgColor = "#16a34a";
-                                  label = "✔ Approved";
+                                  label = "Approved";
                                 } else if (status === "rejected") {
                                   bgColor = "#dc2626";
-                                  label = "✘ Rejected";
+                                  label = "Rejected";
                                 }
                                 
                                 return (
@@ -2394,7 +2674,7 @@ const AiVisionPage = () => {
                                   style={{ fontSize: "18px", color: "#999", padding: "0", border: "none", cursor: "pointer" }}
                                   title="Actions"
                                 >
-                                  ⋮
+                                  ...
                                 </button>
                                 {openMenuId === file._id && (
                                   <ul className="dropdown-menu show" style={{
@@ -2413,7 +2693,7 @@ const AiVisionPage = () => {
                                           setOpenMenuId(null);
                                         }}
                                       >
-                                        👁️ View
+                                        View
                                       </button>
                                     </li>
                                     <li>
@@ -2425,7 +2705,7 @@ const AiVisionPage = () => {
                                           setOpenMenuId(null);
                                         }}
                                       >
-                                        ✏️ Edit
+                                        Edit
                                       </button>
                                     </li>
                                     <li><hr className="dropdown-divider" /></li>
@@ -2437,7 +2717,7 @@ const AiVisionPage = () => {
                                           setOpenMenuId(null);
                                         }}
                                       >
-                                        ✔ Approve
+                                        Approve
                                       </button>
                                     </li>
                                     <li>
@@ -2448,7 +2728,7 @@ const AiVisionPage = () => {
                                           setOpenMenuId(null);
                                         }}
                                       >
-                                        ✘ Reject
+                                        Reject
                                       </button>
                                     </li>
                                     <li><hr className="dropdown-divider" /></li>
@@ -2460,7 +2740,7 @@ const AiVisionPage = () => {
                                           setOpenMenuId(null);
                                         }}
                                       >
-                                        📄 PDF
+                                        PDF
                                       </button>
                                     </li>
                                     <li>
@@ -2471,7 +2751,7 @@ const AiVisionPage = () => {
                                           setOpenMenuId(null);
                                         }}
                                       >
-                                        📊 Excel
+                                        Excel
                                       </button>
                                     </li>
                                     <li>
@@ -2493,7 +2773,7 @@ const AiVisionPage = () => {
                                           setOpenMenuId(null);
                                         }}
                                       >
-                                        📋 CSV
+                                        CSV
                                       </button>
                                     </li>
                                   </ul>
@@ -2560,7 +2840,7 @@ const AiVisionPage = () => {
               }}
               onClick={() => setSelectedImage(null)}
             >
-              ✕
+              X
             </button>
             
             <div className="text-center" style={{ maxWidth: "100%", maxHeight: "100%" }}>
@@ -2576,9 +2856,9 @@ const AiVisionPage = () => {
                   borderRadius: "5px",
                   boxShadow: "0 5px 30px rgba(0,0,0,0.5)"
                 }}
-                onLoad={() => console.log('✅ Enlarged image loaded successfully')}
+                onLoad={() => console.log(' Enlarged image loaded successfully')}
                 onError={(e) => {
-                  console.error('❌ Failed to load enlarged image:', selectedImage);
+                  console.error(' Failed to load enlarged image:', selectedImage);
                   console.error('Processed URL:', getImagePreview(selectedImage));
                   
                   e.currentTarget.style.display = 'none';
@@ -2588,7 +2868,7 @@ const AiVisionPage = () => {
                     const errorDiv = document.createElement('div');
                     errorDiv.className = 'text-center p-5';
                     errorDiv.innerHTML = `
-                      <div style="font-size: 48px; color: #ff6b6b;">❌</div>
+                      <div style="font-size: 48px; color: #ff6b6b;"></div>
                       <h5 class="mt-3 text-white">Failed to load image</h5>
                       <div class="text-muted mt-2">
                         <small>Original URL: ${selectedImage}</small><br/>
@@ -2637,5 +2917,6 @@ const AiVisionPage = () => {
 };
 
 export default AiVisionPage;
+
 
 

@@ -1,30 +1,45 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
+import axiosInstance from "../../../utils/baseUrl";
+import { useAuth } from "../../../context/AuthContext";
+import { useUserStore } from "../../../zustand/userDetailsStore";
 
 interface DeleteAccountProps {
   onCancel: () => void;
 }
 
 const DeleteAccount: React.FC<DeleteAccountProps> = () => {
+  const navigate = useNavigate();
+  const { logout } = useAuth();
+  const userData = useUserStore((state) => state.userData);
   const [confirmation, setConfirmation] = useState("");
   const [error, setError] = useState("");
   const [formData, setFormData] = useState({
-    email: "",
+    email: userData?.email || "",
   });
   const [passwordData, setPasswordData] = useState({
-    newPassword: "",
+    password: "",
   });
   const [errors, setErrors] = useState({
-    newPassword: "",
+    password: "",
   });
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (userData?.email) {
+      setFormData((prev) => ({ ...prev, email: userData.email }));
+    }
+  }, [userData?.email]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
 
     if (name === "email") {
       setFormData({ ...formData, [name]: value });
-    } else if (name === "newPassword") {
+    } else if (name === "password") {
       setPasswordData({ ...passwordData, [name]: value });
-      setErrors({ newPassword: "" });
+      setErrors({ password: "" });
     } else if (name === "deleteConfirmation") {
       setConfirmation(value);
       setError("");
@@ -39,25 +54,37 @@ const DeleteAccount: React.FC<DeleteAccountProps> = () => {
       return;
     }
 
+    if (!formData.email || !passwordData.password) {
+      setError("Email and password are required");
+      return;
+    }
+
+    setLoading(true);
     try {
-      const res = await fetch("/api/delete-account", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+      const res = await axiosInstance.delete("/user-delete-account", {
+        data: {
           email: formData.email,
-          password: passwordData.newPassword,
-        }),
+          password: passwordData.password,
+        },
       });
 
-      const result = await res.json();
-
-      if (!res.ok) {
-        throw new Error(result.message || "Something went wrong");
+      if (res.data?.status === "success") {
+        toast.success("Account deleted successfully");
+        logout();
+        localStorage.removeItem("token");
+        sessionStorage.removeItem("token");
+        localStorage.removeItem("authToken");
+        sessionStorage.removeItem("authToken");
+        navigate("/login", { replace: true });
+      } else {
+        throw new Error(res.data?.message || "Failed to delete account");
       }
-
-      alert("Account deleted successfully");
     } catch (err: any) {
-      alert(err.message || "Failed to delete account");
+      const msg = err?.response?.data?.message || err?.message || "Failed to delete account";
+      toast.error(msg);
+      setError(msg);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -91,20 +118,20 @@ const DeleteAccount: React.FC<DeleteAccountProps> = () => {
         </div>
 
         <div className="input-filed-item-smart-ai mb-3">
-          <label htmlFor="newPassword" className="form-label">
+          <label htmlFor="password" className="form-label">
             Password
           </label>
           <input
             type="password"
-            id="newPassword"
-            name="newPassword"
-            value={passwordData.newPassword}
+            id="password"
+            name="password"
+            value={passwordData.password}
             onChange={handleChange}
             autoComplete="new-password"
             required
           />
-          {errors.newPassword && (
-            <div className="text-danger">{errors.newPassword}</div>
+          {errors.password && (
+            <div className="text-danger">{errors.password}</div>
           )}
         </div>
 
@@ -127,9 +154,9 @@ const DeleteAccount: React.FC<DeleteAccountProps> = () => {
           <button
             type="submit"
             className="delete-button btn btn-danger"
-            disabled={confirmation.toLowerCase() !== "delete"}
+            disabled={loading || confirmation.toLowerCase() !== "delete"}
           >
-            DELETE ACCOUNT
+            {loading ? "Deleting..." : "DELETE ACCOUNT"}
           </button>
         </div>
       </form>

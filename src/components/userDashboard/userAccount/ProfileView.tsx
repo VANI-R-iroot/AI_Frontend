@@ -3,6 +3,14 @@ import { useUserStore } from "../../../zustand/userDetailsStore";
 
 const ProfileView: React.FC = () => {
   const userData = useUserStore((state) => state.userData);
+  const jobRole = userData?.job_role || userData?.jobRole;
+  const phoneNumber = userData?.phone_number || userData?.phoneNumber;
+  const companyName = userData?.company_name || userData?.companyName;
+  const companyWebsite = userData?.company_website || userData?.companyWebsite;
+  const addressLine = userData?.address_line || userData?.addressLine;
+  const postalCode = userData?.postal_code || userData?.postalCode;
+  const userName = userData?.user_name || userData?.userName;
+  const state = userData?.state || "";
 
   return (
     <div className="profile-view">
@@ -17,8 +25,12 @@ const ProfileView: React.FC = () => {
             <p>{userData?.name}</p>
           </div>
           <div className="detail-item">
+            <label>Username</label>
+            <p>{userName || "Not provided"}</p>
+          </div>
+          <div className="detail-item">
             <label>Job Role</label>
-            <p>{userData?.jobRole}</p>
+            <p>{jobRole || "Not provided"}</p>
           </div>
         </div>
 
@@ -29,25 +41,25 @@ const ProfileView: React.FC = () => {
           </div>
           <div className="detail-item">
             <label>Phone Number</label>
-            <p>{userData?.phoneNumber}</p>
+            <p>{phoneNumber || "Not provided"}</p>
           </div>
         </div>
 
         <div className="detail-group">
           <div className="detail-item">
             <label>Company Name</label>
-            <p>{userData?.companyName}</p>
+            <p>{companyName || "Not provided"}</p>
           </div>
           <div className="detail-item">
             <label>Company Website</label>
-            <p>{userData?.companyWebsite || "Not provided"}</p>
+            <p>{companyWebsite || "Not provided"}</p>
           </div>
         </div>
 
         <div className="detail-group">
           <div className="detail-item">
             <label>Address</label>
-            <p>{userData?.addressLine || "Not provided"}</p>
+            <p>{addressLine || "Not provided"}</p>
           </div>
         </div>
 
@@ -57,12 +69,16 @@ const ProfileView: React.FC = () => {
             <p>{userData?.city || "Not provided"}</p>
           </div>
           <div className="detail-item">
+            <label>State</label>
+            <p>{state || "Not provided"}</p>
+          </div>
+          <div className="detail-item">
             <label>Postal Code</label>
-            <p>{userData?.postalCode || "Not provided"}</p>
+            <p>{postalCode || "Not provided"}</p>
           </div>
           <div className="detail-item">
             <label>Country</label>
-            <p>{userData?.country}</p>
+            <p>{userData?.country || "Not provided"}</p>
           </div>
         </div>
       </div>
@@ -71,3 +87,4 @@ const ProfileView: React.FC = () => {
 };
 
 export default ProfileView;
+

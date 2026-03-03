@@ -1074,7 +1074,7 @@ const mapApiSubscription = (subscription: any): UserSubscription => {
   const isExpired = Boolean(!isActive && endsAt && endsAt <= now);
 
   return {
-    planId: subscription?.current_package_id || subscription?.package_id || subscription?.id,
+    planId: subscription?.current_package_id || subscription?.package_id || null,
     packageType: subscription?.package_type || subscription?.title || "Plan",
     status: (subscription?.subscription_status || subscription?.stripe_status || "inactive").toString(),
     ends_at: subscription?.ends_at,
@@ -1440,34 +1440,12 @@ const PricingTable: React.FC = () => {
   }, [billingCycle, monthlyData, yearlyData, lifetimeData]);
 
   /* ================= CHECK IF PLAN IS CURRENT ================= */
-  const isCurrentPlan = (plan: PricingPlan): boolean => {
-    if (!userSubscription || !plan.planId) return false;
-    const userPlanId = userSubscription.current_package_id || userSubscription.planId;
-    const idsMatch =
-      userPlanId !== undefined &&
-      userPlanId !== null &&
-      userPlanId.toString() === plan.planId.toString();
-
-    if (idsMatch && userSubscription.isActive) {
-      return true;
-    }
-
-    // Fallback for environments where API returns inconsistent package IDs.
-    const normalize = (val: any) =>
-      String(val || "")
-        .trim()
-        .toLowerCase()
-        .replace(/\s+/g, " ");
-    const planLabel = normalize(plan.packageType || plan.title);
-    const currentLabel = normalize(userSubscription.packageType);
-
-    return Boolean(
-      userSubscription.isActive &&
-      planLabel &&
-      currentLabel &&
-      planLabel === currentLabel
-    );
-  };
+const isCurrentPlan = (plan: PricingPlan): boolean => {
+  if (!userSubscription || !plan.planId) return false;
+  const userPlanId = userSubscription.current_package_id || userSubscription.planId;
+  if (userPlanId === undefined || userPlanId === null) return false;
+  return userSubscription.isActive && userPlanId.toString() === plan.planId.toString();
+};
 
   /* ================= CHECK IF CAN SUBSCRIBE TO PLAN ================= */
   const canSubscribeToPlan = (plan: PricingPlan): boolean => {
