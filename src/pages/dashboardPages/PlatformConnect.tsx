@@ -72,6 +72,7 @@ interface PlatformSetupField {
   placeholder: string;
   type?: "text" | "url" | "password";
 }
+type AttributePublishMode = "all" | "none" | "custom";
 
 const normalizePlatformName = (value?: string) =>
   String(value || "").trim().toLowerCase();
@@ -176,7 +177,9 @@ const PlatformConnectPage: React.FC = () => {
     keywords: true,
     attributes: true,
   });
-  const [selectedAttributeKeys, setSelectedAttributeKeys] = useState<string[]>([]);
+  const [attributePublishByVisionId, setAttributePublishByVisionId] = useState<
+    Record<number, { mode: AttributePublishMode; keys: string[] }>
+  >({});
   const [form, setForm] = useState({
     storeUrl: "",
     consumerKey: "",
@@ -499,28 +502,113 @@ const PlatformConnectPage: React.FC = () => {
     [wooVisionResults, selectedVisionIds]
   );
 
-  const selectedVisionAttributeKeys = useMemo(
-    () =>
-      Array.from(
-        new Set(
-          selectedVisionRows.flatMap((row) =>
-            Array.isArray(row.attribute_keys) ? row.attribute_keys : []
-          )
-        )
-      ),
-    [selectedVisionRows]
-  );
-
   const togglePublishOption = (
     key: "title" | "short_description" | "long_description" | "keywords" | "attributes"
   ) => {
     setPublishFieldOptions((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
-  const toggleAttributeKey = (key: string) => {
-    setSelectedAttributeKeys((prev) =>
-      prev.includes(key) ? prev.filter((item) => item !== key) : [...prev, key]
-    );
+  const initializeSelectedVisionAttributeConfig = () => {
+    setAttributePublishByVisionId((prev) => {
+      const next = { ...prev };
+      selectedVisionRows.forEach((row) => {
+        const id = Number(row.id);
+        if (Number.isNaN(id)) return;
+        const rowKeys = (Array.isArray(row.attribute_keys) ? row.attribute_keys : [])
+          .map((key) => String(key || "").trim())
+          .filter(Boolean);
+        const existing = next[id];
+        if (!existing) {
+          next[id] = {
+            mode: rowKeys.length > 0 ? "all" : "none",
+            keys: rowKeys,
+          };
+          return;
+        }
+        next[id] = {
+          mode: existing.mode,
+          keys: existing.keys.filter((key) => rowKeys.includes(key)),
+        };
+      });
+      return next;
+    });
+  };
+
+  const setVisionAttributeMode = (
+    visionId: number,
+    mode: AttributePublishMode,
+    rowKeys: string[]
+  ) => {
+    setAttributePublishByVisionId((prev) => {
+      const current = prev[visionId] || { mode: "all" as AttributePublishMode, keys: rowKeys };
+      let nextKeys = current.keys.filter((key) => rowKeys.includes(key));
+      if (mode === "all") nextKeys = rowKeys;
+      if (mode === "none") nextKeys = [];
+      if (mode === "custom" && nextKeys.length === 0 && rowKeys.length > 0) {
+        nextKeys = rowKeys;
+      }
+      return {
+        ...prev,
+        [visionId]: { mode, keys: nextKeys },
+      };
+    });
+  };
+
+  const toggleVisionAttributeKey = (
+    visionId: number,
+    key: string,
+    rowKeys: string[]
+  ) => {
+    setAttributePublishByVisionId((prev) => {
+      const current = prev[visionId] || { mode: "custom" as AttributePublishMode, keys: rowKeys };
+      const hasKey = current.keys.includes(key);
+      const nextKeys = hasKey
+        ? current.keys.filter((item) => item !== key)
+        : [...current.keys, key].filter((item) => rowKeys.includes(item));
+      return {
+        ...prev,
+        [visionId]: {
+          mode: "custom",
+          keys: nextKeys,
+        },
+      };
+    });
+  };
+
+  const openVisionAttributePicker = (visionId: number) => {
+    const row = wooVisionResults.find((item) => Number(item.id) === Number(visionId));
+    if (!row) return;
+    if (!row.publishable) {
+      notifyWarning("Only WooCommerce-linked generated items can be configured for publish");
+      return;
+    }
+
+    const rowKeys = (Array.isArray(row.attribute_keys) ? row.attribute_keys : [])
+      .map((key) => String(key || "").trim())
+      .filter(Boolean);
+
+    setSelectedVisionIds([visionId]);
+    setAttributePublishByVisionId((prev) => {
+      const existing = prev[visionId];
+      if (!existing) {
+        return {
+          ...prev,
+          [visionId]: {
+            mode: rowKeys.length > 0 ? "all" : "none",
+            keys: rowKeys,
+          },
+        };
+      }
+
+      return {
+        ...prev,
+        [visionId]: {
+          mode: existing.mode,
+          keys: existing.keys.filter((key) => rowKeys.includes(key)),
+        },
+      };
+    });
+    setShowPublishOptions(true);
   };
 
   const handlePublishSelectedVisionResults = async () => {
@@ -535,13 +623,24 @@ const PlatformConnectPage: React.FC = () => {
       return;
     }
 
-    if (
-      publishFieldOptions.attributes &&
-      selectedVisionAttributeKeys.length > 0 &&
-      selectedAttributeKeys.length === 0
-    ) {
-      notifyWarning("Select at least one attribute key or disable attributes");
-      return;
+    initializeSelectedVisionAttributeConfig();
+
+    if (publishFieldOptions.attributes) {
+      const invalidCustomSelection = selectedVisionRows.some((row) => {
+        const rowId = Number(row.id);
+        const rowKeys = (Array.isArray(row.attribute_keys) ? row.attribute_keys : [])
+          .map((key) => String(key || "").trim())
+          .filter(Boolean);
+        const config = attributePublishByVisionId[rowId] || {
+          mode: rowKeys.length > 0 ? ("all" as AttributePublishMode) : ("none" as AttributePublishMode),
+          keys: rowKeys,
+        };
+        return config.mode === "custom" && rowKeys.length > 0 && config.keys.length === 0;
+      });
+      if (invalidCustomSelection) {
+        notifyWarning("For custom mode, select at least one attribute key.");
+        return;
+      }
     }
 
     setPublishingVisionResults(true);
@@ -551,13 +650,33 @@ const PlatformConnectPage: React.FC = () => {
 
       for (const visionId of selectedVisionIds) {
         try {
+          const row = selectedVisionRows.find(
+            (item) => Number(item.id) === Number(visionId)
+          );
+          const rowKeys = (Array.isArray(row?.attribute_keys) ? row?.attribute_keys : [])
+            .map((key) => String(key || "").trim())
+            .filter(Boolean);
+          const config = attributePublishByVisionId[visionId] || {
+            mode: rowKeys.length > 0 ? ("all" as AttributePublishMode) : ("none" as AttributePublishMode),
+            keys: rowKeys,
+          };
+          const fields = { ...publishFieldOptions };
+          let attributeKeys: string[] = [];
+
+          if (fields.attributes) {
+            if (config.mode === "none") {
+              fields.attributes = false;
+            } else if (config.mode === "custom") {
+              attributeKeys = config.keys.filter((key) => rowKeys.includes(key));
+            }
+          }
+
           await axiosInstance.post(
             `/integrations/woocommerce/vision/publish/${visionId}`,
             {
-              fields: publishFieldOptions,
-              attribute_keys: publishFieldOptions.attributes
-                ? selectedAttributeKeys
-                : [],
+              fields,
+              attribute_mode: config.mode,
+              attribute_keys: fields.attributes ? attributeKeys : [],
             }
           );
           successCount += 1;
@@ -578,7 +697,13 @@ const PlatformConnectPage: React.FC = () => {
       }
 
       setSelectedVisionIds([]);
-      setSelectedAttributeKeys([]);
+      setAttributePublishByVisionId((prev) => {
+        const next = { ...prev };
+        selectedVisionIds.forEach((id) => {
+          delete next[id];
+        });
+        return next;
+      });
       await loadWooVisionResults();
     } finally {
       setPublishingVisionResults(false);
@@ -947,7 +1072,7 @@ const PlatformConnectPage: React.FC = () => {
                   setShowPublishOptions((prev) => {
                     const next = !prev;
                     if (next) {
-                      setSelectedAttributeKeys(selectedVisionAttributeKeys);
+                      initializeSelectedVisionAttributeConfig();
                     }
                     return next;
                   });
@@ -1011,38 +1136,76 @@ const PlatformConnectPage: React.FC = () => {
                   </label>
                 </div>
 
-                {publishFieldOptions.attributes && selectedVisionAttributeKeys.length > 0 && (
+                {publishFieldOptions.attributes && selectedVisionRows.length > 0 && (
                   <div>
                     <div style={{ fontSize: "12px", marginBottom: "6px", opacity: 0.85 }}>
-                      Select attribute keys
+                      Attribute publish mode per selected result
                     </div>
-                    <div style={{ display: "flex", gap: "8px", marginBottom: "8px" }}>
-                      <button
-                        type="button"
-                        className="pc-btn"
-                        onClick={() => setSelectedAttributeKeys(selectedVisionAttributeKeys)}
-                      >
-                        All
-                      </button>
-                      <button
-                        type="button"
-                        className="pc-btn"
-                        onClick={() => setSelectedAttributeKeys([])}
-                      >
-                        Clear
-                      </button>
-                    </div>
-                    <div style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}>
-                      {selectedVisionAttributeKeys.map((key) => (
-                        <label key={key}>
-                          <input
-                            type="checkbox"
-                            checked={selectedAttributeKeys.includes(key)}
-                            onChange={() => toggleAttributeKey(key)}
-                          />{" "}
-                          {key}
-                        </label>
-                      ))}
+                    <div style={{ maxHeight: "240px", overflowY: "auto", display: "grid", gap: "8px" }}>
+                      {selectedVisionRows.map((row) => {
+                        const rowId = Number(row.id);
+                        const rowKeys = (Array.isArray(row.attribute_keys) ? row.attribute_keys : [])
+                          .map((key) => String(key || "").trim())
+                          .filter(Boolean);
+                        const config = attributePublishByVisionId[rowId] || {
+                          mode: rowKeys.length > 0 ? ("all" as AttributePublishMode) : ("none" as AttributePublishMode),
+                          keys: rowKeys,
+                        };
+
+                        return (
+                          <div
+                            key={`attr-mode-${rowId}`}
+                            style={{
+                              border: "1px solid rgba(148, 163, 184, 0.25)",
+                              borderRadius: "8px",
+                              padding: "8px",
+                            }}
+                          >
+                            <div style={{ display: "flex", justifyContent: "space-between", gap: "10px", alignItems: "center" }}>
+                              <div style={{ fontSize: "12px", fontWeight: 600 }}>
+                                #{rowId} {row.woo_product_name || row.title || ""}
+                              </div>
+                              <select
+                                value={config.mode}
+                                onChange={(e) =>
+                                  setVisionAttributeMode(
+                                    rowId,
+                                    e.target.value as AttributePublishMode,
+                                    rowKeys
+                                  )
+                                }
+                                style={{
+                                  background: "#0f172a",
+                                  color: "#e2e8f0",
+                                  border: "1px solid rgba(148, 163, 184, 0.35)",
+                                  borderRadius: "6px",
+                                  padding: "2px 6px",
+                                  fontSize: "12px",
+                                }}
+                              >
+                                <option value="all">All</option>
+                                <option value="none">None</option>
+                                <option value="custom">Custom</option>
+                              </select>
+                            </div>
+
+                            {config.mode === "custom" && rowKeys.length > 0 && (
+                              <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginTop: "8px" }}>
+                                {rowKeys.map((key) => (
+                                  <label key={`${rowId}-${key}`} style={{ fontSize: "12px" }}>
+                                    <input
+                                      type="checkbox"
+                                      checked={config.keys.includes(key)}
+                                      onChange={() => toggleVisionAttributeKey(rowId, key, rowKeys)}
+                                    />{" "}
+                                    {key}
+                                  </label>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
                 )}
@@ -1067,13 +1230,14 @@ const PlatformConnectPage: React.FC = () => {
                     <th>Woo Product</th>
                     <th>Score</th>
                     <th>Status</th>
+                    <th>Attributes</th>
                     <th>Generated On</th>
                   </tr>
                 </thead>
                 <tbody>
                   {wooVisionResults.length === 0 ? (
                     <tr>
-                      <td colSpan={7} style={{ textAlign: "center" }}>
+                      <td colSpan={8} style={{ textAlign: "center" }}>
                         No generated WooCommerce results found.
                       </td>
                     </tr>
@@ -1114,6 +1278,20 @@ const PlatformConnectPage: React.FC = () => {
                           </td>
                           <td>{row.score ?? "-"}</td>
                           <td>{row.status || "-"}</td>
+                          <td>
+                            {canPublish ? (
+                              <button
+                                type="button"
+                                className="pc-btn"
+                                style={{ padding: "4px 8px", fontSize: "12px" }}
+                                onClick={() => openVisionAttributePicker(id)}
+                              >
+                                Pick
+                              </button>
+                            ) : (
+                              "-"
+                            )}
+                          </td>
                           <td>
                             {row.created_at
                               ? new Date(row.created_at).toLocaleString("en-US", {
