@@ -9,6 +9,16 @@ import { updateSessionUser } from "../../../../utils/userSession";
 import imgeRight from "../../../../assets/image/Home-02/authPages/Thumbnail.png";
 import { useGoogleLogin } from "@react-oauth/google";
 
+const isOnboardingDone = (value: any) =>
+  value === 1 || value === true || value === "1";
+
+const shouldRedirectToOnboarding = (needsOnboarding: any, userData: any) => {
+  const onboardingCompleted = isOnboardingDone(
+    userData?.onboarding_completed ?? userData?.onboardingCompleted
+  );
+  return Boolean(needsOnboarding) || !onboardingCompleted;
+};
+
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -119,14 +129,14 @@ const LoginPage: React.FC = () => {
           return;
         }
         const userData = await fetchUserData();
-        const isFirstLogin = !userData?.last_login;
+        const loginUserData = response.data?.data || {};
+        const isFirstLogin = !loginUserData?.last_login;
         const welcomeMsg = `${isFirstLogin ? "Welcome" : "Welcome back"}, ${userData?.name || "User"}!`;
         localStorage.setItem("login_welcome_notice", welcomeMsg);
         setEmail("");
         setPassword("");
-        
-        // If user needs onboarding, redirect to onboarding, otherwise dashboard
-        if (needsOnboarding) {
+
+        if (shouldRedirectToOnboarding(needsOnboarding, loginUserData)) {
           navigate("/company-onboarding", { replace: true });
         } else {
           navigate("/dashboard", { replace: true });
@@ -180,10 +190,14 @@ const LoginPage: React.FC = () => {
           const isFirstLogin = !userData?.last_login;
           const welcomeMsg = `${isFirstLogin ? "Welcome" : "Welcome back"}, ${userData?.name || "User"}!`;
           localStorage.setItem("login_welcome_notice", welcomeMsg);
-
-          navigate(needsOnboarding ? "/company-onboarding" : "/dashboard", {
+          navigate(
+            shouldRedirectToOnboarding(needsOnboarding, userData)
+              ? "/company-onboarding"
+              : "/dashboard",
+            {
             replace: true,
-          });
+            }
+          );
         } else {
           toast.error("Failed to Login. Please try again.");
         }

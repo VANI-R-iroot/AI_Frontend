@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { getSessionUser } from "../utils/userSession";
+import { getSessionUser, updateSessionUser } from "../utils/userSession";
 
 interface UserState {
   apiUseAiCodeGenerateLimit: number;
@@ -15,11 +15,14 @@ export const useUserStore = create<UserState>((set, get) => {
     userData: sessionUser,
     setUserData: (data: any) => {
       const merged = { ...get().userData, ...data };
+      updateSessionUser(merged);
       set({
         userData: merged,
-        apiUseAiCodeGenerateLimit: data.apiUseAiCodeGenerateLimit ?? get().apiUseAiCodeGenerateLimit,
+        apiUseAiCodeGenerateLimit:
+          data.apiUseAiCodeGenerateLimit ?? get().apiUseAiCodeGenerateLimit,
       });
     },
   };
 });
+
 

@@ -16,13 +16,14 @@ interface Industry {
   name: string;
 }
 
-type CountryOption = { name: string; isoCode: string };
+type CountryOption = { name: string; isoCode: string; phonecode?: string };
 type StateOption = { name: string; isoCode: string; countryCode: string };
 type CityOption = { name: string; stateCode: string; countryCode: string };
 
 const CompanyOnboarding = () => {
   const navigate = useNavigate();
   const userData = useUserStore((state) => state.userData);
+  const setUserData = useUserStore((state) => state.setUserData);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -44,7 +45,13 @@ const CompanyOnboarding = () => {
   const [cities, setCities] = useState<CityOption[]>([]);
   const [selectedCountryCode, setSelectedCountryCode] = useState("");
   const [selectedStateCode, setSelectedStateCode] = useState("");
+  const [selectedPhoneCode, setSelectedPhoneCode] = useState("+1");
   const [loading, setLoading] = useState(false);
+  const isDuplicatePhoneError = (status: number | undefined, message: string) =>
+    status === 409 ||
+    /contact number|phone number|already in use|duplicate/i.test(
+      String(message || "")
+    );
   const roleOptions = [
     "Founder/CEO",
     "Product Manager",
@@ -123,6 +130,9 @@ const CompanyOnboarding = () => {
       state: "",
       city: "",
     }));
+    if (selected?.phonecode) {
+      setSelectedPhoneCode(`+${selected.phonecode}`);
+    }
   };
 
   const handleStateChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -168,13 +178,16 @@ const CompanyOnboarding = () => {
     setLoading(true);
 
     try {
+      const fullContactNumber = `${selectedPhoneCode} ${String(
+        formData.contact_number || ""
+      ).trim()}`.trim();
       const response = await axiosInstance.post("/company", {
         name: formData.name,
         website: formData.website || null,
         city: formData.city,
         country: formData.country,
         state: formData.state,
-        contact_number: formData.contact_number,
+        contact_number: fullContactNumber,
         platform_type_id: parseInt(formData.platform_type_id),
         industry_type_id: parseInt(formData.industry_type_id),
         role: formData.role || null,
@@ -186,6 +199,24 @@ const CompanyOnboarding = () => {
         
         // Mark onboarding as completed
         await axiosInstance.post("/company/onboarding/complete");
+
+        const fullContactNumber = `${selectedPhoneCode} ${String(
+          formData.contact_number || ""
+        ).trim()}`.trim();
+        setUserData({
+          company_name: formData.name,
+          companyName: formData.name,
+          company_website: formData.website || "",
+          companyWebsite: formData.website || "",
+          city: formData.city,
+          country: formData.country,
+          state: formData.state,
+          phone_number: fullContactNumber,
+          phoneNumber: fullContactNumber,
+          job_role: formData.role || "",
+          jobRole: formData.role || "",
+          onboarding_completed: 1,
+        });
         
         // Redirect to dashboard after a short delay
         localStorage.setItem(
@@ -198,9 +229,13 @@ const CompanyOnboarding = () => {
           response.data?.message ||
           response.data?.error ||
           "Failed to create company. Please try again.";
-        toast.error(msg);
-        if (String(msg).toLowerCase().includes("contact number")) {
-          window.alert(msg);
+        const duplicatePhone = isDuplicatePhoneError(undefined, msg);
+        const duplicateMsg = "Duplicate phone number. Contact number already in use.";
+        if (duplicatePhone) {
+          toast.error(duplicateMsg);
+          window.alert(duplicateMsg);
+        } else {
+          toast.error(msg);
         }
       }
     } catch (error: any) {
@@ -209,12 +244,13 @@ const CompanyOnboarding = () => {
         error?.response?.data?.message ||
         error?.response?.data?.error ||
         "Failed to create company. Please try again.";
-      toast.error(msg);
-      if (
-        error?.response?.status === 409 ||
-        String(msg).toLowerCase().includes("contact number")
-      ) {
-        window.alert(msg);
+      const duplicatePhone = isDuplicatePhoneError(error?.response?.status, msg);
+      const duplicateMsg = "Duplicate phone number. Contact number already in use.";
+      if (duplicatePhone) {
+        toast.error(duplicateMsg);
+        window.alert(duplicateMsg);
+      } else {
+        toast.error(msg);
       }
     } finally {
       setLoading(false);
@@ -365,14 +401,33 @@ const CompanyOnboarding = () => {
                     {/* Contact Number */}
                     <div className="mb-3">
                       <label className="form-label required">Contact Number</label>
-                      <input
-                        type="tel"
-                        className="form-control"
-                        name="contact_number"
-                        value={formData.contact_number}
-                        onChange={handleChange}
-                        placeholder="e.g., +1 555 123 4567"
-                      />
+                      <div className="input-group">
+                        <select
+                          className="form-select"
+                          style={{ maxWidth: "150px" }}
+                          value={selectedPhoneCode}
+                          onChange={(e) => setSelectedPhoneCode(e.target.value)}
+                        >
+                          {countries
+                            .filter((country) => Boolean(country.phonecode))
+                            .map((country) => {
+                              const code = `+${country.phonecode}`;
+                              return (
+                                <option key={`${country.isoCode}-${code}`} value={code}>
+                                  {country.isoCode} ({code})
+                                </option>
+                              );
+                            })}
+                        </select>
+                        <input
+                          type="tel"
+                          className="form-control"
+                          name="contact_number"
+                          value={formData.contact_number}
+                          onChange={handleChange}
+                          placeholder="e.g., 5551234567"
+                        />
+                      </div>
                     </div>
 
                     {/* Platform Type */}
