@@ -784,6 +784,18 @@ const AiVisionPage = () => {
     return "";
   };
 
+  const formatAttributeLabel = (key: string): string => {
+    const cleaned = String(key || "")
+      .trim()
+      .replace(/[_-]+/g, " ")
+      .replace(/\s+/g, " ");
+    if (!cleaned) return "";
+    return cleaned
+      .split(" ")
+      .map((part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+      .join(" ");
+  };
+
   const extractAttributeKeysFromText = (text: string): string[] => {
     if (!text) return [];
     const sectionMatch = text.match(
@@ -818,7 +830,12 @@ const AiVisionPage = () => {
       .map((line) => {
         const cleanedLine = line.replace(/^\s*[-*]\s*/, "").trim();
         const key = extractAttributeKeyFromLine(line);
-        return { key, line: cleanedLine };
+        const valuePart = cleanedLine.includes(":")
+          ? cleanedLine.slice(cleanedLine.indexOf(":") + 1).trim()
+          : "";
+        const prettyKey = formatAttributeLabel(key);
+        const prettyLine = valuePart ? `${prettyKey}: ${valuePart}` : prettyKey;
+        return { key, line: prettyLine || cleanedLine };
       })
       .filter((entry) => Boolean(entry.key));
 
@@ -850,6 +867,32 @@ const AiVisionPage = () => {
           .trim();
 
         return `${prefix}${heading}${filtered ? `${filtered}\n` : ""}`;
+      }
+    );
+  };
+
+  const prettifyAttributeSectionText = (text: string) => {
+    if (!text) return text;
+    return text.replace(
+      /(^|\n)(#{2,3}\s*Attributes\s*\n)([\s\S]*?)(?=\n#{2,3}\s|\Z)/i,
+      (_, prefix: string, heading: string, body: string) => {
+        const formatted = body
+          .split("\n")
+          .map((line: string) => {
+            const trimmed = line.trim();
+            if (!trimmed) return "";
+            const key = extractAttributeKeyFromLine(trimmed);
+            if (!key) return line;
+            const valuePart = trimmed.includes(":")
+              ? trimmed.slice(trimmed.indexOf(":") + 1).trim()
+              : "";
+            const prettyKey = formatAttributeLabel(key);
+            const bulletPrefix = line.match(/^\s*[-*]\s*/)?.[0] || "";
+            return `${bulletPrefix}${prettyKey}${valuePart ? `: ${valuePart}` : ""}`;
+          })
+          .filter(Boolean)
+          .join("\n");
+        return `${prefix}${heading}${formatted ? `${formatted}\n` : ""}`;
       }
     );
   };
@@ -1358,25 +1401,15 @@ const AiVisionPage = () => {
 
   const getDisplayedSingleResultText = () => {
     if (!resultText) return "";
-    if (editMode || availableSingleResultAttributeKeys.length === 0) return resultText;
-    return filterAttributesInText(resultText, selectedSingleResultAttributeKeys);
+    if (editMode) return resultText;
+    const filtered =
+      availableSingleResultAttributeKeys.length > 0
+        ? filterAttributesInText(resultText, selectedSingleResultAttributeKeys)
+        : resultText;
+    return prettifyAttributeSectionText(filtered);
   };
 
   const displayedSingleResultText = getDisplayedSingleResultText();
-
-  const setAllSingleResultAttributes = () => {
-    setHiddenResultAttributeKeysByResultId((prev) => ({
-      ...prev,
-      [singleResultAttributeStateKey]: [],
-    }));
-  };
-
-  const clearSingleResultAttributes = () => {
-    setHiddenResultAttributeKeysByResultId((prev) => ({
-      ...prev,
-      [singleResultAttributeStateKey]: [...availableSingleResultAttributeKeys],
-    }));
-  };
 
   const toggleSingleResultAttributeKey = (key: string) => {
     setHiddenResultAttributeKeysByResultId((prev) => {
@@ -1399,8 +1432,8 @@ const AiVisionPage = () => {
     const selectedKeys = availableKeys.filter((key) => !hiddenKeys.includes(key));
     const displayText =
       availableKeys.length > 0
-        ? filterAttributesInText(rawText, selectedKeys)
-        : rawText;
+        ? prettifyAttributeSectionText(filterAttributesInText(rawText, selectedKeys))
+        : prettifyAttributeSectionText(rawText);
 
     return {
       rowId,
@@ -1409,20 +1442,6 @@ const AiVisionPage = () => {
       selectedKeys,
       displayText,
     };
-  };
-
-  const setAllBulkResultAttributes = (rowId: string) => {
-    setHiddenBulkAttributeKeysByResultId((prev) => ({
-      ...prev,
-      [rowId]: [],
-    }));
-  };
-
-  const clearBulkResultAttributes = (rowId: string, availableKeys: string[]) => {
-    setHiddenBulkAttributeKeysByResultId((prev) => ({
-      ...prev,
-      [rowId]: [...availableKeys],
-    }));
   };
 
   const toggleBulkResultAttributeKey = (rowId: string, key: string) => {
@@ -2274,87 +2293,6 @@ const AiVisionPage = () => {
                                       {!(
                                         historyEditMode && selectedResultId === item._id
                                       ) &&
-                                        bulkAttr.rawText &&
-                                        bulkAttr.availableKeys.length > 0 && (
-                                          <div
-                                            style={{
-                                              marginTop: "10px",
-                                              border: "1px solid rgba(148, 163, 184, 0.28)",
-                                              borderRadius: "8px",
-                                              padding: "10px",
-                                              background: "rgba(15, 23, 42, 0.45)",
-                                            }}
-                                          >
-                                            <div
-                                              style={{
-                                                fontSize: "12px",
-                                                fontWeight: 600,
-                                                marginBottom: "8px",
-                                                color: "#cbd5e1",
-                                              }}
-                                            >
-                                              Select attributes for this image
-                                            </div>
-                                            <div
-                                              style={{
-                                                display: "flex",
-                                                gap: "8px",
-                                                marginBottom: "8px",
-                                              }}
-                                            >
-                                              <button
-                                                type="button"
-                                                className="btn btn-sm btn-outline-light"
-                                                onClick={() =>
-                                                  setAllBulkResultAttributes(bulkAttr.rowId)
-                                                }
-                                              >
-                                                All
-                                              </button>
-                                              <button
-                                                type="button"
-                                                className="btn btn-sm btn-outline-light"
-                                                onClick={() =>
-                                                  clearBulkResultAttributes(
-                                                    bulkAttr.rowId,
-                                                    bulkAttr.availableKeys
-                                                  )
-                                                }
-                                              >
-                                                None
-                                              </button>
-                                            </div>
-                                            <div
-                                              style={{
-                                                display: "flex",
-                                                flexWrap: "wrap",
-                                                gap: "10px",
-                                              }}
-                                            >
-                                              {bulkAttr.availableKeys.map((key) => (
-                                                <label
-                                                  key={`${bulkAttr.rowId}-${key}`}
-                                                  style={{ fontSize: "12px", color: "#e2e8f0" }}
-                                                >
-                                                  <input
-                                                    type="checkbox"
-                                                    checked={bulkAttr.selectedKeys.includes(key)}
-                                                    onChange={() =>
-                                                      toggleBulkResultAttributeKey(
-                                                        bulkAttr.rowId,
-                                                        key
-                                                      )
-                                                    }
-                                                  />{" "}
-                                                  {key}
-                                                </label>
-                                              ))}
-                                            </div>
-                                          </div>
-                                        )}
-                                      {!(
-                                        historyEditMode && selectedResultId === item._id
-                                      ) &&
                                         bulkAttributeEntries.length > 0 && (
                                           <div
                                             style={{
@@ -2498,7 +2436,7 @@ const AiVisionPage = () => {
                                 <div className="chat-style-result-box markdown-output">
                                   <ReactMarkdown>{displayedSingleResultText}</ReactMarkdown>
                                 </div>
-                                {availableSingleResultAttributeKeys.length > 0 && (
+                                {singleResultAttributeEntries.length > 0 && (
                                   <div
                                     style={{
                                       marginTop: "10px",
@@ -2516,64 +2454,11 @@ const AiVisionPage = () => {
                                         color: "#cbd5e1",
                                       }}
                                     >
-                                      Select attributes to keep in result output
-                                    </div>
-                                    <div style={{ display: "flex", gap: "8px", marginBottom: "8px" }}>
-                                      <button
-                                        type="button"
-                                        className="btn btn-sm btn-outline-light"
-                                        onClick={setAllSingleResultAttributes}
-                                      >
-                                        All
-                                      </button>
-                                      <button
-                                        type="button"
-                                        className="btn btn-sm btn-outline-light"
-                                        onClick={clearSingleResultAttributes}
-                                      >
-                                        None
-                                      </button>
-                                    </div>
-                                    <div style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}>
-                                      {availableSingleResultAttributeKeys.map((key) => (
-                                        <label key={`single-attr-${key}`} style={{ fontSize: "12px", color: "#e2e8f0" }}>
-                                          <input
-                                            type="checkbox"
-                                            checked={selectedSingleResultAttributeKeys.includes(key)}
-                                            onChange={() => toggleSingleResultAttributeKey(key)}
-                                          />{" "}
-                                          {key}
-                                        </label>
-                                      ))}
-                                    </div>
-                                  </div>
-                                )}
-                                {singleResultAttributeEntries.length > 0 && (
-                                  <div
-                                    style={{
-                                      marginTop: "10px",
-                                      border: "1px solid rgba(148, 163, 184, 0.28)",
-                                      borderRadius: "8px",
-                                      padding: "10px",
-                                      background: "rgba(15, 23, 42, 0.45)",
-                                    }}
-                                  >
-                                    <div
-                                      style={{
-                                        fontSize: "12px",
-                                        fontWeight: 600,
-                                        marginBottom: "8px",
-                                        color: "#cbd5e1",
-                                      }}
-                                    >
                                       Inline attributes toggle (compare)
                                     </div>
                                     <div style={{ display: "grid", gap: "6px" }}>
                                       {singleResultAttributeEntries.map((entry) => (
-                                        <label
-                                          key={`single-inline-${entry.key}`}
-                                          style={{ fontSize: "12px", color: "#e2e8f0" }}
-                                        >
+                                        <label key={`single-inline-${entry.key}`} style={{ fontSize: "12px", color: "#e2e8f0" }}>
                                           <input
                                             type="checkbox"
                                             checked={selectedSingleResultAttributeKeys.includes(entry.key)}

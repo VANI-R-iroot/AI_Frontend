@@ -34,6 +34,16 @@ const mapBlogItem = (item: any): BlogItem => ({
   createDate: item.created_at || item.createDate || new Date().toISOString(),
 });
 
+const slugifyTitle = (value: string) =>
+  String(value || "")
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\s-]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-");
+
+const toBlogSlug = (title: string, id: string) => `${slugifyTitle(title)}-${id}`;
+
 interface Category {
   name: string;
   count: number;
@@ -121,7 +131,7 @@ const BlogPages = () => {
                       key={post._id}
                       className="col-md-6 pt-4"
                       onClick={() =>
-                        navigate("/blog-details", {
+                        navigate(`/blog-details/${toBlogSlug(post.title, post._id)}`, {
                           state: { id: post._id },
                         })
                       }
@@ -216,7 +226,7 @@ const BlogPages = () => {
                           key={post._id}
                           className="col-md-12 mb-3"
                           onClick={() =>
-                            navigate("/blog-details", {
+                            navigate(`/blog-details/${toBlogSlug(post.title, post._id)}`, {
                               state: { id: post._id },
                             })
                           }
