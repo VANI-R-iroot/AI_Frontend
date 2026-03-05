@@ -799,7 +799,7 @@ const AiVisionPage = () => {
   const extractAttributeKeysFromText = (text: string): string[] => {
     if (!text) return [];
     const sectionMatch = text.match(
-      /(?:^|\n)#{2,3}\s*Attributes\s*\n([\s\S]*?)(?=\n#{2,3}\s|\Z)/i
+      /(?:^|\n)(?:#{2,3}\s*)?Attributes\s*\n([\s\S]*?)(?=\n#{2,3}\s|$)/i
     );
     const sectionText = sectionMatch?.[1] || text;
 
@@ -818,7 +818,7 @@ const AiVisionPage = () => {
   ): Array<{ key: string; line: string }> => {
     if (!text) return [];
     const sectionMatch = text.match(
-      /(?:^|\n)#{2,3}\s*Attributes\s*\n([\s\S]*?)(?=\n#{2,3}\s|\Z)/i
+      /(?:^|\n)(?:#{2,3}\s*)?Attributes\s*\n([\s\S]*?)(?=\n#{2,3}\s|$)/i
     );
     const sectionText = sectionMatch?.[1] || "";
     if (!sectionText) return [];
@@ -852,7 +852,7 @@ const AiVisionPage = () => {
     const allowedSet = new Set(allowedKeys);
 
     return text.replace(
-      /(^|\n)(#{2,3}\s*Attributes\s*\n)([\s\S]*?)(?=\n#{2,3}\s|\Z)/i,
+      /(^|\n)((?:#{2,3}\s*)?Attributes\s*\n)([\s\S]*?)(?=\n#{2,3}\s|$)/i,
       (_, prefix: string, heading: string, body: string) => {
         const filtered = body
           .split("\n")
@@ -874,7 +874,7 @@ const AiVisionPage = () => {
   const prettifyAttributeSectionText = (text: string) => {
     if (!text) return text;
     return text.replace(
-      /(^|\n)(#{2,3}\s*Attributes\s*\n)([\s\S]*?)(?=\n#{2,3}\s|\Z)/i,
+      /(^|\n)((?:#{2,3}\s*)?Attributes\s*\n)([\s\S]*?)(?=\n#{2,3}\s|$)/i,
       (_, prefix: string, heading: string, body: string) => {
         const formatted = body
           .split("\n")
@@ -2751,7 +2751,7 @@ const AiVisionPage = () => {
                                     checked={selectedAttributeKeys.includes(key)}
                                     onChange={() => toggleAttributeKey(key)}
                                   />{" "}
-                                  {key}
+                                  {formatAttributeLabel(key)}
                                 </label>
                               ))}
                             </div>
@@ -2965,9 +2965,12 @@ const AiVisionPage = () => {
                               style={{ cursor: "pointer" }}
                               onClick={() => handleFileSelect(file._id)}
                             >
-                              {file.text.length > 50
-                                ? file.text.substring(0, 50) + "..."
-                                : file.text}
+                              {(() => {
+                                const readableText = prettifyAttributeSectionText(file.text || "");
+                                return readableText.length > 50
+                                  ? readableText.substring(0, 50) + "..."
+                                  : readableText;
+                              })()}
                             </td>
 
                             <td>
