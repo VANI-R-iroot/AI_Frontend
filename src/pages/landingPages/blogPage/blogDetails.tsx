@@ -1,5 +1,5 @@
 import { useEffect, useState, lazy } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import axiosInstance from "../../../utils/baseUrl.ts";
 import { apiConfig } from "../../../utils/apiConfig.tsx";
 import HomeNavbar from "../../../common/HomeNavbar.tsx";
@@ -35,6 +35,22 @@ const mapBlogItem = (item: any): BlogItem => ({
   createDate: item.created_at || item.createDate || new Date().toISOString(),
 });
 
+const slugifyTitle = (value: string) =>
+  String(value || "")
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\s-]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-");
+
+const toBlogSlug = (title: string, id: string) => `${slugifyTitle(title)}-${id}`;
+
+const parseIdFromSlug = (slug?: string) => {
+  if (!slug) return "";
+  const match = slug.match(/-(\d+)$/);
+  return match?.[1] || "";
+};
+
 interface Category {
   name: string;
   count: number;
@@ -55,7 +71,9 @@ const renderDescriptionWithImagePath = (html: string) => {
 
 const BlogDetails = () => {
   const [searchKeyWord, setSearchKeyWord] = useState("");
+  const navigate = useNavigate();
   const location = useLocation();
+  const { slug } = useParams();
   const blogId = location.state?.id;
   const [blogData, setBlogData] = useState<BlogItem[]>([]);
   const [selectedBlog, setSelectedBlog] = useState<BlogItem | null>(null);
@@ -98,12 +116,28 @@ const BlogDetails = () => {
   useEffect(() => {
     if (!blogData.length) return;
 
-    const targetId = sideId || blogId;
+    const idFromSlug = parseIdFromSlug(slug);
+    const targetId = sideId || blogId || idFromSlug;
     if (targetId) {
-      const found = blogData.find((item) => item._id === targetId);
+      const found = blogData.find(
+        (item) =>
+          item._id === targetId ||
+          toBlogSlug(item.title, item._id) === slug ||
+          slugifyTitle(item.title) === slug
+      );
       setSelectedBlog(found || null);
+      return;
     }
-  }, [blogId, sideId, blogData]);
+
+    if (slug) {
+      const foundBySlug = blogData.find(
+        (item) =>
+          toBlogSlug(item.title, item._id) === slug ||
+          slugifyTitle(item.title) === slug
+      );
+      setSelectedBlog(foundBySlug || null);
+    }
+  }, [blogId, sideId, slug, blogData]);
 
   const filteredBlogs = blogData.filter(
     (post) =>
@@ -205,7 +239,12 @@ const BlogDetails = () => {
                       <div
                         key={post._id}
                         className="col-md-12 mb-3"
-                        onClick={() => setSideId(post._id)}
+                        onClick={() => {
+                          setSideId(post._id);
+                          navigate(`/blog-details/${toBlogSlug(post.title, post._id)}`, {
+                            state: { id: post._id },
+                          });
+                        }}
                       >
                         <div className="recent-side-bar-blog-card d-flex align-items-start">
                           <div className="recent-side-bar-blog-card-image me-3">

@@ -30,6 +30,16 @@ const mapBlogItem = (item: any): BlogItem => ({
   createDate: item.created_at || item.createDate || new Date().toISOString(),
 });
 
+const slugifyTitle = (value: string) =>
+  String(value || "")
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\s-]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-");
+
+const toBlogSlug = (title: string, id: string) => `${slugifyTitle(title)}-${id}`;
+
 const BlogSection: React.FC = () => {
   const [blogData, setBlogData] = useState<BlogItem[]>([]);
   const navigate = useNavigate();
@@ -100,7 +110,7 @@ const BlogSection: React.FC = () => {
                 <div
                   className="blog-card"
                   onClick={() =>
-                    navigate("/blog-details", {
+                    navigate(`/blog-details/${toBlogSlug(post.title, post._id)}`, {
                       state: { id: post._id },
                     })
                   }

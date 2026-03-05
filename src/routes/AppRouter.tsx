@@ -138,6 +138,7 @@ const AppRouter = () => {
       <Route path="/admin-blog-demo-preview" element={<PublicLayout><BlogDemoPreviewPage /></PublicLayout>} />
       <Route path="/blogs" element={<PublicLayout><BlogPublicPages /></PublicLayout>} />
       <Route path="/blog-details" element={<PublicLayout><BlogDetailsPage /></PublicLayout>} />
+      <Route path="/blog-details/:slug" element={<PublicLayout><BlogDetailsPage /></PublicLayout>} />
       <Route path="/terms-conditions" element={<PublicLayout><TermsConditions /></PublicLayout>} />
       <Route path="/privacy-policy" element={<PublicLayout><PrivacyPolicy /></PublicLayout>} />
 
