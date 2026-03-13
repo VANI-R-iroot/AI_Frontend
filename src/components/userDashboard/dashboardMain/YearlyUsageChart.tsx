@@ -7,63 +7,12 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
+import { useEffect, useMemo, useState } from "react";
+import axiosInstance from "../../../utils/baseUrl";
 
-const generateData = () => {
-  const dates = [
-    "Mar 30",
-    "Mar 31",
-    "Apr 01",
-    "Apr 02",
-    "Apr 03",
-    "Apr 04",
-    "Apr 05",
-    "Apr 06",
-    "Apr 07",
-    "Apr 08",
-    "Apr 09",
-    "Apr 10",
-    "Apr 11",
-    "Apr 12",
-    "Apr 13",
-    "Apr 14",
-    "Apr 15",
-    "Apr 16",
-    "Apr 17",
-    "Apr 18",
-    "Apr 19",
-    "Apr 20",
-    "Apr 21",
-    "Apr 22",
-    "Apr 23",
-    "Apr 24",
-    "Apr 25",
-    "Apr 26",
-    "Apr 27",
-    "Apr 28",
-    "Apr 29",
-  ];
-
-  const usersData = [
-    130, 165, 170, 205, 200, 170, 160, 150, 170, 270, 180, 170, 180, 165, 135,
-    170, 150, 140, 130, 105, 130, 135, 140, 130, 165, 140, 105, 160, 170, 25,
-  ];
-
-  const sessionsData = [
-    95, 110, 115, 110, 135, 120, 115, 105, 170, 125, 125, 115, 100, 85, 100,
-    110, 100, 95, 75, 75, 85, 95, 100, 100, 75, 75, 110, 75, 100, 150,
-  ];
-
-  const audioData = [
-    130, 165, 140, 205, 200, 190, 160, 150, 170, 200, 180, 170, 300, 165, 135,
-    190, 200, 140, 130, 105, 130, 135, 190, 130, 165, 140, 105, 150, 190, 205,
-  ];
-
-  return dates.map((date, index) => ({
-    name: date,
-    Users: usersData[index],
-    Sessions: sessionsData[index],
-    audioData: audioData[index],
-  }));
+type ProductItem = {
+  type: string;
+  createdAt: string;
 };
 
 interface TooltipProps {
@@ -114,7 +63,91 @@ const GlobeIcon = () => (
 );
 
 export default function UsersAndSessionsChart() {
-  const data = generateData();
+  const [products, setProducts] = useState<ProductItem[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const res = await axiosInstance.get("/api-access/products", {
+          params: { limit: 200 },
+        });
+        const list = Array.isArray(res?.data?.data?.products)
+          ? res.data.data.products
+          : [];
+        setProducts(
+          list.map((item: any) => ({
+            type: String(item.type || ""),
+            createdAt: String(item.createdAt || ""),
+          }))
+        );
+      } catch (error) {
+        console.error("Failed to fetch products usage data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
+  const data = useMemo(() => {
+    const days: {
+      name: string;
+      key: string;
+      text: number;
+      image: number;
+      vision: number;
+    }[] = [];
+
+    const now = new Date();
+    for (let i = 29; i >= 0; i -= 1) {
+      const date = new Date(now);
+      date.setHours(0, 0, 0, 0);
+      date.setDate(now.getDate() - i);
+      const key = date.toISOString().split("T")[0];
+      const name = date.toLocaleDateString("en-US", {
+        month: "short",
+        day: "2-digit",
+      });
+      days.push({ name, key, text: 0, image: 0, vision: 0 });
+    }
+
+    const dayMap = new Map(days.map((day) => [day.key, day]));
+
+    products.forEach((item) => {
+      if (!item.createdAt) return;
+      const date = new Date(item.createdAt);
+      if (Number.isNaN(date.getTime())) return;
+      const key = date.toISOString().split("T")[0];
+      const target = dayMap.get(key);
+      if (!target) return;
+
+      if (item.type === "code_generate") target.text += 1;
+      if (item.type === "text_to_image") target.image += 1;
+      if (item.type === "vision") target.vision += 1;
+    });
+
+    return days.map((day) => ({
+      name: day.name,
+      Text: day.text,
+      Image: day.image,
+      Vision: day.vision,
+    }));
+  }, [products]);
+
+  const totals = useMemo(
+    () =>
+      data.reduce(
+        (acc, row) => ({
+          text: acc.text + Number(row.Text || 0),
+          image: acc.image + Number(row.Image || 0),
+          vision: acc.vision + Number(row.Vision || 0),
+        }),
+        { text: 0, image: 0, vision: 0 }
+      ),
+    [data]
+  );
 
   return (
     <div className="user-dashboard-line-chart-container ">
@@ -122,31 +155,34 @@ export default function UsersAndSessionsChart() {
         <span className="user-dashboard-line-chart-globe">
           <GlobeIcon />
         </span>
-        Generate a month
+        Generation (Last 30 Days)
       </div>
       <div className="user-dashboard-line-chart-content-legend">
         <div className="user-dashboard-line-chart-legend-item">
-          <h6>Word: 500</h6>
+          <h6>Text: {totals.text}</h6>
           <div
             className="user-dashboard-line-chart-legend-dot"
             style={{ backgroundColor: "#3182ce" }}
           ></div>
         </div>
         <div className="user-dashboard-line-chart-legend-item">
-          <h6>Image: 500</h6>
+          <h6>Image: {totals.image}</h6>
           <div
             className="user-dashboard-line-chart-legend-dot"
             style={{ backgroundColor: "#ed8936" }}
           ></div>
         </div>
         <div className="user-dashboard-line-chart-legend-item">
-          <h6>Audio: 500</h6>
+          <h6>Vision: {totals.vision}</h6>
           <div
             className="user-dashboard-line-chart-legend-dot"
             style={{ backgroundColor: "#8252e9" }}
           ></div>
         </div>
       </div>
+      {loading ? (
+        <div className="dashboard-loading-inline">Loading chart data...</div>
+      ) : null}
       <ResponsiveContainer width="100%" height="90%">
         <AreaChart
           data={data}
@@ -171,13 +207,13 @@ export default function UsersAndSessionsChart() {
             axisLine={false}
             tickLine={false}
             tick={{ fill: "white", fontSize: 12 }}
+            minTickGap={24}
           />
           <YAxis
             axisLine={false}
             tickLine={false}
             tick={{ fill: "white", fontSize: 12 }}
-            domain={[0, 300]}
-            ticks={[0, 50, 100, 150, 200, 250, 300]}
+            allowDecimals={false}
           />
           <CartesianGrid
             vertical={false}
@@ -188,7 +224,7 @@ export default function UsersAndSessionsChart() {
           <Tooltip content={<CustomTooltip />} />
           <Area
             type="monotone"
-            dataKey="Users"
+            dataKey="Text"
             stroke="#d4af37"
             strokeWidth={2}
             fill="url(#colorUsers)"
@@ -197,7 +233,7 @@ export default function UsersAndSessionsChart() {
           />
           <Area
             type="monotone"
-            dataKey="audioData"
+            dataKey="Vision"
             stroke="#8252e9"
             strokeWidth={2}
             fill="url(#audioSessions)"
@@ -206,7 +242,7 @@ export default function UsersAndSessionsChart() {
           />
           <Area
             type="monotone"
-            dataKey="Sessions"
+            dataKey="Image"
             stroke="#2a9df4"
             strokeWidth={2}
             fill="url(#colorSessions)"

@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import axiosInstance from "../../utils/baseUrl";
 import { useUserStore } from "../../zustand/userDetailsStore";
-import adminImage from "../../assets/image/admin/allImage";
 import { Country, State, City } from "country-state-city";
 
 interface Platform {

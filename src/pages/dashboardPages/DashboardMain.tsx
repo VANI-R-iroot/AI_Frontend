@@ -1,23 +1,139 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import UsageStatsCard from "../../components/userDashboard/dashboardMain/payCahtCard";
-import { userDashboardAgent } from "../../DataList/data";
 import YearlyUsageChart from "../../components/userDashboard/dashboardMain/YearlyUsageChart";
 import { useNavigate } from "react-router-dom";
 import CommonTrailBar from "../../common/CommonTrailBar";
 import DashboardNotificationList from "../../components/userDashboard/dashboardMain/userNoticesection";
 import AnnouncementBanner from "../../components/userDashboard/dashboardMain/AnnouncementBanner";
 import GiftAndSupport from "../../components/userDashboard/dashboardMain/giftAndSupportSection.tsx";
+import DashboardInsightsPanel from "../../components/userDashboard/dashboardMain/DashboardInsightsPanel";
+import ProductAnalyserFocusPanel from "../../components/userDashboard/dashboardMain/ProductAnalyserFocusPanel";
 import PluginSection from "../../components/userDashboard/widgetSetup/dashboardPluginSection.tsx";
 import VisitorMonitoringOnly from "../../components/userDashboard/visitorTracking/VisitorMonitoringOnly.tsx";
 import { usePluginStore } from "../../zustand/pluginStore";
 import { useUserStore } from "../../zustand/userDetailsStore";
 import axiosInstance from "../../utils/baseUrl.ts";
+import {
+  FiMessageSquare,
+  FiImage,
+  FiCode,
+  FiMic,
+  FiFilm,
+  FiLayers,
+  FiUsers,
+  FiSearch,
+  FiPackage,
+  FiCpu,
+  FiBarChart2,
+  FiLink,
+} from "react-icons/fi";
 
 interface UserData {
   email: string;
   name: string;
   _id: string;
 }
+
+type DashboardUsage = {
+  tokenUsage?: {
+    month?: number;
+    apiTokenCalls?: number;
+  };
+  productUsage?: {
+    month?: number;
+  };
+};
+
+type QuickAccessItem = {
+  id: string;
+  title: string;
+  description: string;
+  link: string;
+  icon: React.ReactNode;
+  limitKey?: string;
+  accent: string;
+};
+
+const quickAccessCatalog: QuickAccessItem[] = [
+  {
+    id: "vision",
+    title: "Product Analyser",
+    description: "Generate product title, descriptions, and attributes",
+    link: "/aivision",
+    icon: <FiSearch />,
+    limitKey: "ai_vision_limit",
+    accent: "#a855f7",
+  },
+  {
+    id: "assistant",
+    title: "AI Assistant",
+    description: "Chat with your tailored assistant for content workflows",
+    link: "/assistant",
+    icon: <FiMessageSquare />,
+    limitKey: "ai_chat_assistant_limit",
+    accent: "#0ea5e9",
+  },
+  {
+    id: "image",
+    title: "Create Image",
+    description: "Create product creatives and campaign visuals",
+    link: "/imagegenerate",
+    icon: <FiImage />,
+    limitKey: "text_to_image_limit",
+    accent: "#f97316",
+  },
+  {
+    id: "coding",
+    title: "Code Generator",
+    description: "Generate snippets, components, and helper logic",
+    link: "/codegenerate",
+    icon: <FiCode />,
+    limitKey: "ai_code_generate_limit",
+    accent: "#22c55e",
+  },
+  {
+    id: "speech-to-text",
+    title: "Speech to Text",
+    description: "Convert calls and voice notes into clean transcript",
+    link: "/speachtotext",
+    icon: <FiMic />,
+    limitKey: "speech_to_text_limit",
+    accent: "#06b6d4",
+  },
+  {
+    id: "video-to-text",
+    title: "Video to Text",
+    description: "Extract text and summaries from video content",
+    link: "/videototext",
+    icon: <FiFilm />,
+    limitKey: "video_to_text_limit",
+    accent: "#eab308",
+  },
+  {
+    id: "platform-connect",
+    title: "Platform Connect",
+    description: "Push generated content to connected stores",
+    link: "/platform-connect",
+    icon: <FiLayers />,
+    accent: "#8b5cf6",
+  },
+  {
+    id: "team-settings",
+    title: "Team Settings",
+    description: "Manage teammates, roles, and workspace permissions",
+    link: "/team-settings",
+    icon: <FiUsers />,
+    accent: "#14b8a6",
+  },
+];
+
+const hasFeatureAccess = (subscription: any, limitKey?: string) => {
+  if (!limitKey) return true;
+  if (!subscription) return true;
+  const limit = Number(subscription?.[limitKey]);
+  if (Number.isNaN(limit)) return true;
+  return limit === -1 || limit > 0;
+};
 
 const Dashboard: React.FC = () => {
   const userData = useUserStore((state) => state.userData || {}) as UserData;
@@ -30,6 +146,10 @@ const Dashboard: React.FC = () => {
   } | null>(null);
   const [welcomeNotice, setWelcomeNotice] = useState<string>("");
   const [showWelcomeCard, setShowWelcomeCard] = useState(false);
+  const [currentSubscription, setCurrentSubscription] = useState<any>(null);
+  const [dashboardUsage, setDashboardUsage] = useState<DashboardUsage | null>(
+    null
+  );
 
   useEffect(() => {
     const notice = localStorage.getItem("login_welcome_notice");
@@ -55,7 +175,7 @@ const Dashboard: React.FC = () => {
   };
 
   const quickAccess = () => {
-    navigate("/assistant");
+    navigate("/ai-tools-page");
   };
 
   const fetchTrackingData = async () => {
@@ -83,8 +203,95 @@ const Dashboard: React.FC = () => {
     }
   }, [domainNames, userData?.email]);
 
+  useEffect(() => {
+    const fetchDashboardCoreData = async () => {
+      try {
+        const [subscriptionRes, usageRes] = await Promise.all([
+          axiosInstance.get("/subscription/current"),
+          axiosInstance.get("/api-access/usage"),
+        ]);
+        setCurrentSubscription(subscriptionRes?.data?.data || null);
+        setDashboardUsage(usageRes?.data?.data || null);
+      } catch (error) {
+        console.error("Failed to fetch dashboard core data:", error);
+      }
+    };
+
+    fetchDashboardCoreData();
+  }, []);
+
+  const filteredQuickAccess = quickAccessCatalog.filter((item) =>
+    hasFeatureAccess(currentSubscription, item.limitKey)
+  );
+  const quickAccessItems =
+    filteredQuickAccess.length >= 4
+      ? filteredQuickAccess.slice(0, 4)
+      : quickAccessCatalog.slice(0, 4);
+
+  const greeting = useMemo(() => {
+    const hour = new Date().getHours();
+    if (hour < 12) return "Good Morning";
+    if (hour < 18) return "Good Afternoon";
+    return "Good Evening";
+  }, []);
+
+  const firstName = useMemo(() => {
+    const name = String(userData?.name || "").trim();
+    if (!name) return "there";
+    return name.split(" ")[0];
+  }, [userData?.name]);
+
+  const todayLabel = useMemo(
+    () =>
+      new Date().toLocaleDateString("en-US", {
+        weekday: "long",
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      }),
+    []
+  );
+
+  const overviewCards = useMemo(
+    () => [
+      {
+        key: "products",
+        label: "Products This Month",
+        value: dashboardUsage?.productUsage?.month ?? 0,
+        hint: "Generated content items",
+        icon: <FiPackage />,
+        tone: "is-orange",
+      },
+      {
+        key: "tokens",
+        label: "Tokens This Month",
+        value: dashboardUsage?.tokenUsage?.month ?? 0,
+        hint: "Total token consumption",
+        icon: <FiCpu />,
+        tone: "is-cyan",
+      },
+      {
+        key: "calls",
+        label: "API Calls",
+        value: dashboardUsage?.tokenUsage?.apiTokenCalls ?? 0,
+        hint: "Requests across tools",
+        icon: <FiBarChart2 />,
+        tone: "is-violet",
+      },
+      {
+        key: "widgets",
+        label: "Connected Widgets",
+        value: domainNames?.length || 0,
+        hint: "Active integration points",
+        icon: <FiLink />,
+        tone: "is-emerald",
+      },
+    ],
+    [dashboardUsage, domainNames]
+  );
+
   return (
-    <div className="main-content-common">
+    <div className="main-content-common dashboard-main-shell">
       <CommonTrailBar />
       <AnnouncementBanner />
       {welcomeNotice && showWelcomeCard ? (
@@ -171,8 +378,55 @@ const Dashboard: React.FC = () => {
         </div>
       ) : null}
       <h2 className="user-dashboard-common-title">Dashboard</h2>
+      <div className="dashboard-hero-card">
+        <div className="dashboard-hero-main">
+          <p className="dashboard-hero-eyebrow">
+            {greeting}, {firstName}
+          </p>
+          <h3 className="dashboard-hero-title">Welcome to your AI workspace</h3>
+          <p className="dashboard-hero-subtitle">
+            {todayLabel} | Track usage, manage integrations, and publish faster.
+          </p>
+          <div className="dashboard-hero-badges">
+            <span className="dashboard-hero-badge">
+              Widgets: {domainNames?.length || 0}
+            </span>
+            <span className="dashboard-hero-badge">
+              Visitors: {trackingStatus?.totalVisitors || 0}
+            </span>
+          </div>
+        </div>
+        <div className="dashboard-hero-actions">
+          <button className="dashboard-hero-btn primary" onClick={() => navigate("/assistant")}>
+            Open AI Assistant
+          </button>
+          <button className="dashboard-hero-btn" onClick={() => navigate("/platform-connect")}>
+            Manage Platforms
+          </button>
+          <button className="dashboard-hero-btn" onClick={() => navigate("/visitor-analyzer")}>
+            Open Analytics
+          </button>
+        </div>
+      </div>
 
-      <div className="user-dashboard-section-01">
+      <div className="dashboard-overview-grid dashboard-block">
+        {overviewCards.map((card) => (
+          <div className={`dashboard-overview-card ${card.tone}`} key={card.key}>
+            <div className="dashboard-overview-head">
+              <p className="dashboard-overview-label">{card.label}</p>
+              <span className="dashboard-overview-icon">{card.icon}</span>
+            </div>
+            <h3>{card.value}</h3>
+            <p className="dashboard-overview-hint">{card.hint}</p>
+          </div>
+        ))}
+      </div>
+
+      <div className="dashboard-block">
+        <ProductAnalyserFocusPanel />
+      </div>
+
+      <div className="user-dashboard-section-01 dashboard-block">
         <div className="row">
           <div className="col-12 col-sm-12 col-md-12 col-lg-5 col-xl-4">
             <UsageStatsCard />
@@ -183,43 +437,51 @@ const Dashboard: React.FC = () => {
         </div>
       </div>
 
-      <div className="user-dashboard-section-02">
-        <div className="user-dashboard-common-sub-title">
-          <h2>Quick Access</h2>
+      <div className="user-dashboard-section-06 dashboard-block">
+        <DashboardInsightsPanel />
+      </div>
+
+      <div className="user-dashboard-section-02 dashboard-block">
+        <div className="user-dashboard-common-sub-title dashboard-section-header">
+          <div>
+            <h2>Quick Access</h2>
+            <p className="dashboard-section-subtext">Start from your most-used tools</p>
+          </div>
           <button className="see-more-btn" onClick={quickAccess}>
             See More <span className="arrow-icon">{"->"}</span>
           </button>
         </div>
         <div className="row">
-          {userDashboardAgent.map((agent, index) => (
+          {quickAccessItems.map((agent, index) => (
             <div
               className={`col-12 col-sm-12 col-md-6 col-lg-4 col-xl-3 ${
                 index >= 4 ? "pt-4" : ""
               }`}
-              key={index}
+              key={agent.id}
             >
               <div
                 className="dashboard-quick-access-card"
                 onClick={() => navigate(agent.link)}
+                style={{ ["--quick-accent" as any]: agent.accent }}
               >
-                <img
-                  src={agent.agentIcon}
-                  alt={agent.text}
-                  className="card-img-quick-access"
-                />
-                <div className="card-body">
-                  <h5 className="card-title">{agent.text}</h5>
+                <div className="card-img-quick-access">{agent.icon}</div>
+                <div className="quick-access-card-body">
+                  <h5 className="card-title">{agent.title}</h5>
                   <p className="card-text">{agent.description}</p>
                 </div>
+                <div className="quick-access-open">Open</div>
               </div>
             </div>
           ))}
         </div>
       </div>
 
-      <div className="user-dashboard-section-03">
-        <div className="user-dashboard-common-sub-title">
-          <h2>AI Chatbot Widget Integration</h2>
+      <div className="user-dashboard-section-03 dashboard-block">
+        <div className="user-dashboard-common-sub-title dashboard-section-header">
+          <div>
+            <h2>Integrations</h2>
+            <p className="dashboard-section-subtext">Manage your widgets and platform assets</p>
+          </div>
           <button className="see-more-btn" onClick={handleSeeMore}>
             See More <span className="arrow-icon">{"->"}</span>
           </button>
@@ -227,9 +489,12 @@ const Dashboard: React.FC = () => {
         <PluginSection />
       </div>
 
-      <div className="user-dashboard-section-04">
-        <div className="user-dashboard-common-sub-title">
-          <h2>Announcements & widget Monitoring</h2>
+      <div className="user-dashboard-section-04 dashboard-block">
+        <div className="user-dashboard-common-sub-title dashboard-section-header">
+          <div>
+            <h2>Live Monitoring</h2>
+            <p className="dashboard-section-subtext">Track announcements and visitor activity in real time</p>
+          </div>
           <button className="see-more-btn" onClick={visitSeeMore}>
             See More <span className="arrow-icon">{"->"}</span>
           </button>
@@ -255,7 +520,7 @@ const Dashboard: React.FC = () => {
         </div>
       </div>
 
-      <div className="user-dashboard-section-05">
+      <div className="user-dashboard-section-05 dashboard-block">
         <GiftAndSupport />
       </div>
       <style>{`
@@ -275,4 +540,5 @@ const Dashboard: React.FC = () => {
 };
 
 export default Dashboard;
+
 

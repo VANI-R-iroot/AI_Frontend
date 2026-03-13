@@ -1087,7 +1087,15 @@ const mapApiSubscription = (subscription: any): UserSubscription => {
 
 /* ================= COMPONENT ================= */
 
-const PricingTable: React.FC = () => {
+interface PricingTableProps {
+  showCustomRequest?: boolean;
+  hideInternalFeatures?: boolean;
+}
+
+const PricingTable: React.FC<PricingTableProps> = ({
+  showCustomRequest = true,
+  hideInternalFeatures = false,
+}) => {
   const hasSignedInRole = () =>
     !!localStorage.getItem("role") || !!sessionStorage.getItem("role");
 
@@ -1379,6 +1387,8 @@ const PricingTable: React.FC = () => {
     if (billingCycle === "yearly") source = yearlyData;
     if (billingCycle === "lifetime") source = lifetimeData;
 
+    const internalFeatureKeys = ["is_public", "is_template", "prompt_count"];
+
     const plans: PricingPlan[] = source.map((plan) => {
       const features = Object.entries(plan)
         .filter(
@@ -1392,7 +1402,8 @@ const PricingTable: React.FC = () => {
             typeof val !== "object" &&
             val !== null &&
             !key.includes("_at") &&
-            !key.includes("_date")
+            !key.includes("_date") &&
+            !(hideInternalFeatures && internalFeatureKeys.includes(key))
         )
         .map(([key, val]) => {
           const numeric = Number(val);
@@ -2236,26 +2247,28 @@ const isCurrentPlan = (plan: PricingPlan): boolean => {
           </div>
 
                     {/* Simplified Custom Plan Request Section */}
-          <div className="custom-request-section">
-            <div className="custom-request-title">
-              Need a Custom Plan?
-            </div>
-            <div className="custom-request-subtitle">
-              Click request once. Admin will review your request in user management, accept or reject it, and assign your custom plan.
-            </div>
+          {showCustomRequest && hasSignedInRole() && (
+            <div className="custom-request-section">
+              <div className="custom-request-title">
+                Need a Custom Plan?
+              </div>
+              <div className="custom-request-subtitle">
+                Click request once. Admin will review your request in user management, accept or reject it, and assign your custom plan.
+              </div>
 
-            <button
-              className="request-btn"
-              onClick={handleSubmitCustomRequest}
-              disabled={submittingRequest || customPlanRequests.some((req) => req.status === "pending")}
-            >
-              {submittingRequest
-                ? "Submitting..."
-                : customPlanRequests.some((req) => req.status === "pending")
-                ? "Request Pending"
-                : "Request Custom Plan"}
-            </button>
-          </div>
+              <button
+                className="request-btn"
+                onClick={handleSubmitCustomRequest}
+                disabled={submittingRequest || customPlanRequests.some((req) => req.status === "pending")}
+              >
+                {submittingRequest
+                  ? "Submitting..."
+                  : customPlanRequests.some((req) => req.status === "pending")
+                  ? "Request Pending"
+                  : "Request Custom Plan"}
+              </button>
+            </div>
+          )}
 
           {/* Payment Gateway Modal */}
           {showGatewayModal && selectedPlan && (

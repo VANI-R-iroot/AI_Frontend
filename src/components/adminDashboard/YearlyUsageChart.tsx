@@ -15,6 +15,10 @@ type ChartData = {
   Sessions: number;
 };
 
+type YearlyUsageChartProps = {
+  series?: ChartData[];
+};
+
 interface CustomTooltipProps {
   active?: boolean;
   payload?: Array<{
@@ -25,57 +29,6 @@ interface CustomTooltipProps {
   }>;
   label?: string;
 }
-
-const generateData = (): ChartData[] => {
-  const dates = [
-    "Mar 30",
-    "Mar 31",
-    "Apr 01",
-    "Apr 02",
-    "Apr 03",
-    "Apr 04",
-    "Apr 05",
-    "Apr 06",
-    "Apr 07",
-    "Apr 08",
-    "Apr 09",
-    "Apr 10",
-    "Apr 11",
-    "Apr 12",
-    "Apr 13",
-    "Apr 14",
-    "Apr 15",
-    "Apr 16",
-    "Apr 17",
-    "Apr 18",
-    "Apr 19",
-    "Apr 20",
-    "Apr 21",
-    "Apr 22",
-    "Apr 23",
-    "Apr 24",
-    "Apr 25",
-    "Apr 26",
-    "Apr 27",
-    "Apr 28",
-    "Apr 29",
-  ];
-
-  const usersData = [
-    130, 165, 170, 205, 200, 170, 160, 150, 170, 270, 180, 170, 180, 165, 135,
-    170, 150, 140, 130, 105, 130, 135, 140, 130, 165, 140, 105, 160, 170, 125,
-  ];
-  const sessionsData = [
-    95, 110, 115, 110, 135, 120, 115, 105, 170, 125, 125, 115, 100, 85, 100,
-    110, 100, 95, 75, 75, 85, 95, 100, 100, 75, 75, 110, 75, 90,
-  ];
-
-  return dates.map((date, index) => ({
-    name: date,
-    Users: usersData[index] || 0,
-    Sessions: sessionsData[index] || 0,
-  }));
-};
 
 const CustomTooltip: React.FC<CustomTooltipProps> = ({
   active,
@@ -122,10 +75,7 @@ const GlobeIcon: React.FC = () => (
   </svg>
 );
 
-// Main component
-const UsersAndSessionsChart: React.FC = () => {
-  const data = generateData();
-
+const UsersAndSessionsChart: React.FC<YearlyUsageChartProps> = ({ series = [] }) => {
   return (
     <div className="plugin-download-chart-container">
       <div className="plugin-download-chart-title">
@@ -136,7 +86,7 @@ const UsersAndSessionsChart: React.FC = () => {
       </div>
       <ResponsiveContainer width="100%" height="90%">
         <AreaChart
-          data={data}
+          data={series}
           margin={{ top: 5, right: 30, left: -20, bottom: 5 }}
         >
           <defs>

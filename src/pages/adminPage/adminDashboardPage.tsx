@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import PieChartData from "../../components/adminDashboard/PieChartCard";
 import OrderAnalyticsData from "../../components/adminDashboard/orderAnalytics";
@@ -7,18 +7,61 @@ import ContentGeneratedData from "../../components/adminDashboard/contentgenerat
 import YearlyData from "../../components/adminDashboard/YearlyUsageChart";
 import UserListData from "../../components/adminDashboard/adminDashboardUserList";
 import { fetchTrackingData } from "../../utils/fetchTrackingData";
+import axiosInstance from "../../utils/baseUrl";
+
+type AdminDashboardOverview = {
+  cards?: {
+    totalUsers?: number;
+    users30d?: number;
+    totalSubscriptions?: number;
+    subscriptions30d?: number;
+    totalFreeUsers?: number;
+    freeUsers30d?: number;
+    totalIncome?: number;
+    income30d?: number;
+    totalExpense?: number;
+    expense30d?: number;
+  };
+  orderTrend?: {
+    totalRevenue?: number;
+    changePercent?: number;
+    series?: Array<{ name: string; value: number }>;
+  };
+  pluginTrend?: {
+    series?: Array<{ name: string; Users: number; Sessions: number }>;
+  };
+  contentGenerated?: {
+    series?: Array<{ month: string; word: number; image: number }>;
+    current?: { month?: string; word?: number; image?: number };
+  };
+};
 
 const AdminDashboardPage = () => {
   const navigate = useNavigate();
+  const [dashboardOverview, setDashboardOverview] =
+    useState<AdminDashboardOverview | null>(null);
 
   useEffect(() => {
     fetchTrackingData();
   }, []);
 
+  useEffect(() => {
+    const fetchOverview = async () => {
+      try {
+        const res = await axiosInstance.get("/admin/dashboard/overview");
+        setDashboardOverview(res.data?.data || null);
+      } catch (error) {
+        console.error("Failed to fetch admin dashboard overview:", error);
+      }
+    };
+
+    fetchOverview();
+  }, []);
+
   return (
     <>
       <div className="main-content-common pt-3">
-        <TopAnalyticsData />
+        <TopAnalyticsData cards={dashboardOverview?.cards} />
         <div
           style={{
             marginTop: "20px",
@@ -57,14 +100,14 @@ const AdminDashboardPage = () => {
         </div>
         <div className="row pt-5 ">
           <div className="col-12 col-md-12 col-lg-12 col-xl-4 col-xxl-4">
-            <YearlyData />
+            <YearlyData series={dashboardOverview?.pluginTrend?.series || []} />
           </div>
           <div className="col-12 col-md-12 col-lg-12 col-xl-8 col-xxl-8">
-            <OrderAnalyticsData />
+            <OrderAnalyticsData orderTrend={dashboardOverview?.orderTrend} />
           </div>
         </div>
         <div className="pt-5 ">
-          <ContentGeneratedData />
+          <ContentGeneratedData contentGenerated={dashboardOverview?.contentGenerated} />
         </div>
 
         <div className="row pt-5 ">

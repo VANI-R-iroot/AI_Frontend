@@ -254,7 +254,7 @@ const HomeNavbar: React.FC = () => {
   const [lastScrollY, setLastScrollY] = useState(0);
   const [openMenu, setOpenMenu] = useState<string | null>(null);
   const [isNavbarCollapsed, setIsNavbarCollapsed] = useState(true);
-  const hoverTimeoutRef = useRef<number | null>(null);
+  const hoverTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const isActive = (path: string) => location.pathname === path;
 

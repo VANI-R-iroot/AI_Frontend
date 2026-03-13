@@ -1,4 +1,3 @@
-import { useState } from "react";
 import {
   LineChart,
   Line,
@@ -15,17 +14,15 @@ interface ChartData {
   value: number;
 }
 
-const data: ChartData[] = [
-  { name: "Jan", value: 5000 },
-  { name: "Feb", value: 10000 },
-  { name: "Mar", value: 8000 },
-  { name: "Apr", value: 22000 },
-  { name: "May", value: 12000 },
-  { name: "Jun", value: 18000 },
-  { name: "Jul", value: 25000 },
-  { name: "Aug", value: 20000 },
-  { name: "Sep", value: 15000 },
-];
+type OrderTrendData = {
+  totalRevenue?: number;
+  changePercent?: number;
+  series?: ChartData[];
+};
+
+type OrdersChartProps = {
+  orderTrend?: OrderTrendData;
+};
 
 interface CustomTooltipProps {
   active?: boolean;
@@ -43,8 +40,8 @@ const CustomTooltip: React.FC<CustomTooltipProps> = ({
       <div className="custom-tooltip">
         <p className="tooltip-label">{label}</p>
         <p className="tooltip-value">
-          <span className="tooltip-dot">‚óè</span>
-          This Day: {(payload[0].value / 600).toFixed(2)}
+          <span className="tooltip-dot">ï</span>
+          Revenue: ${Number(payload[0].value || 0).toLocaleString("en-US")}
         </p>
       </div>
     );
@@ -60,33 +57,41 @@ interface CustomizedDotProps {
 
 const CustomizedDot: React.FC<CustomizedDotProps> = ({ cx, cy, index }) => {
   if (index === undefined || cx === undefined || cy === undefined) return null;
-  if (index === 5) {
-    return (
-      <circle
-        cx={cx}
-        cy={cy}
-        r={8}
-        stroke="#3b82f6"
-        strokeWidth={2}
-        fill="white"
-      />
-    );
-  }
-  return null;
+  return (
+    <circle
+      cx={cx}
+      cy={cy}
+      r={8}
+      stroke="#3b82f6"
+      strokeWidth={2}
+      fill="white"
+    />
+  );
 };
 
-export default function OrdersChart() {
-  const [activeIndex] = useState<number>(5);
+export default function OrdersChart({ orderTrend }: OrdersChartProps) {
+  const data = orderTrend?.series || [];
+  const totalRevenue = Number(orderTrend?.totalRevenue || 0);
+  const changePercent = Number(orderTrend?.changePercent || 0);
+  const activeIndex = data.length > 0 ? data.length - 1 : 0;
+  const isPositive = changePercent >= 0;
 
   return (
     <div className="orders-chart-container">
       <div className="orders-title">Recent Orders</div>
-      <div className="orders-value">$27,200</div>
+      <div className="orders-value">${totalRevenue.toLocaleString("en-US")}</div>
       <div className="orders-status">
         <span className="admin-dashboard-order-chart-status-badge">
-          10% <FaCaretDown size={12} />
+          {Math.abs(changePercent).toFixed(1)}%
+          <FaCaretDown
+            size={12}
+            style={{
+              marginLeft: "4px",
+              transform: isPositive ? "rotate(180deg)" : "rotate(0deg)",
+            }}
+          />
         </span>
-        <span className="status-text">Increases</span>
+        <span className="status-text">{isPositive ? "Increase" : "Decrease"}</span>
       </div>
       <div className="order-page-divider"></div>
 

@@ -49,7 +49,7 @@ const FaqSection: React.FC = () => {
             <div className="faq-section-highlight-smart-ai">
               <div>
                 <h2>Got Questions?</h2>
-                <h3>We’re here to Answer You! </h3>
+                <h3>We're here to answer you!</h3>
               </div>
             </div>
           </div>
@@ -95,3 +95,4 @@ const FaqSection: React.FC = () => {
   );
 };
 export default FaqSection;
+

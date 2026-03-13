@@ -943,53 +943,6 @@ const AiVisionPage = () => {
     });
   };
 
-  const setHistoryAttributeMode = (
-    rowId: string,
-    mode: AttributePublishMode,
-    rowKeys: string[]
-  ) => {
-    setAttributePublishByHistoryId((prev) => {
-      const current = prev[rowId] || {
-        mode: "all" as AttributePublishMode,
-        keys: rowKeys,
-      };
-      let nextKeys = current.keys.filter((key) => rowKeys.includes(key));
-      if (mode === "all") nextKeys = rowKeys;
-      if (mode === "none") nextKeys = [];
-      if (mode === "custom" && nextKeys.length === 0 && rowKeys.length > 0) {
-        nextKeys = rowKeys;
-      }
-      return {
-        ...prev,
-        [rowId]: { mode, keys: nextKeys },
-      };
-    });
-  };
-
-  const toggleHistoryAttributeKey = (
-    rowId: string,
-    key: string,
-    rowKeys: string[]
-  ) => {
-    setAttributePublishByHistoryId((prev) => {
-      const current = prev[rowId] || {
-        mode: "custom" as AttributePublishMode,
-        keys: rowKeys,
-      };
-      const hasKey = current.keys.includes(key);
-      const nextKeys = hasKey
-        ? current.keys.filter((item) => item !== key)
-        : [...current.keys, key].filter((item) => rowKeys.includes(item));
-      return {
-        ...prev,
-        [rowId]: {
-          mode: "custom",
-          keys: nextKeys,
-        },
-      };
-    });
-  };
-
   const handleTogglePublishOption = (
     key: "title" | "short_description" | "long_description" | "keywords" | "attributes"
   ) => {

@@ -1,125 +1,108 @@
-import AllImage from "../../../assets/image/Home-02/AllIamge";
-import { TbServer2 } from "react-icons/tb";
+import {
+  FiSearch,
+  FiImage,
+  FiMessageSquare,
+  FiCode,
+  FiMic,
+  FiVideo,
+  FiGlobe,
+  FiLayers,
+} from "react-icons/fi";
 
 const ServiceSection = () => {
   const serviceCards = [
     {
-      icon: <TbServer2 />,
-      title: "Personal MCP Server",
+      icon: <FiSearch />,
+      title: "Product Analyser",
       description:
-        "Lets users quickly find answers to their questions without having to search through multiple sources.",
+        "Generate title, short description, long description, and attributes from product images.",
     },
     {
-      icon: AllImage.AudioIcon,
-      title: "Edit Audio Generator",
+      icon: <FiImage />,
+      title: "Image Generation",
       description:
-        "Lets users quickly find answers to their questions without having to search through multiple sources.",
+        "Create product visuals and marketing creatives for listings and campaigns.",
     },
     {
-      icon: AllImage.ImageIcon,
-      title: "AI Image Generator",
+      icon: <FiMessageSquare />,
+      title: "AI Assistant",
       description:
-        "Lets users quickly find answers to their questions without having to search through multiple sources.",
+        "Draft and refine content quickly with guided AI workflows.",
     },
     {
-      icon: AllImage.VoiceIcon,
-      title: "AI Audio Generator",
+      icon: <FiCode />,
+      title: "Code Generator",
       description:
-        "Lets users quickly find answers to their questions without having to search through multiple sources.",
+        "Generate snippets and implementation helpers for technical tasks.",
     },
     {
-      icon: AllImage.CodeIcon,
-      title: "AI Code Generator",
+      icon: <FiMic />,
+      title: "Speech and Voice",
       description:
-        "Lets users quickly find answers to their questions without having to search through multiple sources.",
-    },
-
-    {
-      icon: AllImage.TextIcon,
-      title: "Plagiarism  Checker",
-      description:
-        "Lets users quickly find answers to their questions without having to search through multiple sources.",
+        "Convert speech to text and generate voiceovers for product content.",
     },
     {
-      icon: AllImage.ContentDetectIcon,
-      title: "grammar checker",
+      icon: <FiVideo />,
+      title: "Video to Text",
       description:
-        "Lets users quickly find answers to their questions without having to search through multiple sources.",
+        "Extract text and insights from videos for faster content creation.",
     },
     {
-      icon: AllImage.VideoIcon,
-      title: "AI Video Generator",
+      icon: <FiGlobe />,
+      title: "Web and Data Tools",
       description:
-        "Lets users quickly find answers to their questions without having to search through multiple sources.",
+        "Use scraping and analyzer tools to enrich product content with context.",
+    },
+    {
+      icon: <FiLayers />,
+      title: "Platform Connect",
+      description:
+        "Push generated content to connected platforms with fewer manual steps.",
     },
   ];
 
   return (
     <section className="home-02-service-card-section">
       <div className="container">
-        {/* AI MCP Widget Banner Section */}
         <div className="homepage-02-ai-mcp-widget-banner">
           <div className="homepage-02-widget-banner-content">
             <div className="homepage-02-widget-banner-left">
               <div className="homepage-02-widget-badge">
-                <span className="homepage-02-badge-text">🚀 NEW RELEASE</span>
+                <span className="homepage-02-badge-text">NEW RELEASE</span>
               </div>
-              <h2 className="homepage-02-widget-title">
-                Universal AI MCP Widget
-              </h2>
+              <h2 className="homepage-02-widget-title">Universal AI MCP Widget</h2>
               <p className="homepage-02-widget-subtitle">
-                Revolutionary real-time AI widget that works with any platform -
-                WordPress, Shopify, Wix, Laravel, PHP, JavaScript, .NET & more
+                Real-time AI widget for product data, documents, and business knowledge.
+                Works across modern web platforms and CMS workflows.
               </p>
 
               <div className="homepage-02-widget-features">
                 <div className="homepage-02-feature-item">
-                  <div className="homepage-02-feature-icon">🌐</div>
+                  <div className="homepage-02-feature-icon">01</div>
                   <div className="homepage-02-feature-text">
                     <strong>Universal Compatibility</strong>
-                    <span>
-                      Works with WordPress, Shopify, Wix, Laravel, PHP,
-                      JavaScript, .NET
-                    </span>
+                    <span>Supports major website and ecommerce environments.</span>
                   </div>
                 </div>
                 <div className="homepage-02-feature-item">
-                  <div className="homepage-02-feature-icon">📊</div>
+                  <div className="homepage-02-feature-icon">02</div>
                   <div className="homepage-02-feature-text">
                     <strong>Real-time Data Processing</strong>
-                    <span>Reads Excel, Google Docs & databases instantly</span>
+                    <span>Works with structured and document-based data sources.</span>
                   </div>
                 </div>
                 <div className="homepage-02-feature-item">
-                  <div className="homepage-02-feature-icon">⚡</div>
+                  <div className="homepage-02-feature-icon">03</div>
                   <div className="homepage-02-feature-text">
-                    <strong>One-Click Installation</strong>
-                    <span>Install on any website in seconds</span>
-                  </div>
-                </div>
-                <div className="homepage-02-feature-item">
-                  <div className="homepage-02-feature-icon">🎯</div>
-                  <div className="homepage-02-feature-text">
-                    <strong>95% Accuracy</strong>
-                    <span>Intelligent responses from your documents</span>
-                  </div>
-                </div>
-                <div className="homepage-02-feature-item">
-                  <div className="homepage-02-feature-icon">🔧</div>
-                  <div className="homepage-02-feature-text">
-                    <strong>WordPress Plugin Available</strong>
-                    <span>Special WordPress plugin for easy integration</span>
+                    <strong>Quick Installation</strong>
+                    <span>Deploy in minutes with minimal setup effort.</span>
                   </div>
                 </div>
               </div>
 
               <div className="homepage-02-widget-cta">
-                <button className="homepage-02-btn-primary-widget">
-                  Get Universal Widget
-                </button>
-                <button className="homepage-02-btn-secondary-widget">
-                  WordPress Plugin
-                </button>
+                <button className="homepage-02-btn-primary-widget">Get Universal Widget</button>
+                <button className="homepage-02-btn-secondary-widget">WordPress Plugin</button>
               </div>
             </div>
             <div className="home-02-hero-right">
@@ -131,32 +114,29 @@ const ServiceSection = () => {
                       <span></span>
                       <span></span>
                     </div>
-                    <div className="widget-title-bar">AI MCP Widget Pro</div>
+                    <div className="widget-title-bar">AI MCP Widget</div>
                   </div>
                   <div className="home-02-widget-body">
                     <div className="chat-message ai-message">
-                      <div className="home-02-message-avatar">🤖</div>
+                      <div className="home-02-message-avatar">AI</div>
                       <div className="home-02-message-content">
-                        Hello! I can analyze your documents, Excel files, and
-                        databases in real-time. How can I help you today?
+                        Ask for product insights, descriptions, and structured output.
                       </div>
                     </div>
                     <div className="chat-message home-02-user-message">
                       <div className="home-02-message-content">
-                        Analyze my Q4 sales data and show trends
+                        Analyze this catalog image and generate listing content.
                       </div>
-                      <div className="home-02-message-avatar">👤</div>
+                      <div className="home-02-message-avatar">You</div>
                     </div>
                     <div className="chat-message ai-message">
-                      <div className="home-02-message-avatar">🤖</div>
+                      <div className="home-02-message-avatar">AI</div>
                       <div className="home-02-message-content">
-                        I've analyzed your Q4 sales data. Revenue increased by
-                        23% compared to Q3, with the highest growth in mobile
-                        devices (+35%). Would you like a detailed breakdown?
+                        Done. Title, short description, long description, and attributes are ready.
                       </div>
                     </div>
                     <div className="home-02-typing-indicator">
-                      <div className="home-02-message-avatar">🤖</div>
+                      <div className="home-02-message-avatar">AI</div>
                       <div className="home-02-typing-dots">
                         <span></span>
                         <span></span>

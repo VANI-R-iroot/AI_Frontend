@@ -87,13 +87,13 @@ const BlogSection: React.FC = () => {
         </div>
         <div className="common-title-section-smart-ai">
           <div>
-            <h3>Useful Resources & Articles</h3>
+            <h3>Product Content Resources</h3>
           </div>
 
           <div className="banner-text-section">
             <p className="service-text">
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-              eiusmod tempor incididunt ut labore
+              Best practices, product analyser guides, and AI workflow updates
+              from the AiProd team.
             </p>
           </div>
         </div>

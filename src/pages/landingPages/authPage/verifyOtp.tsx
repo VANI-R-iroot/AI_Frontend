@@ -11,9 +11,11 @@ const VerifyOtp: React.FC = () => {
   const [OTP, setOtp] = useState("");
   const [email, setEmail] = useState<string | null>("");
   const [notice, setNotice] = useState<string | null>(null);
+  const [flow, setFlow] = useState<"reset" | "signup">("reset");
 
   useEffect(() => {
-    const noticeFromState = (location.state as { notice?: string } | null)?.notice;
+    const state = (location.state as { notice?: string; flow?: "reset" | "signup" } | null) || null;
+    const noticeFromState = state?.notice;
     if (noticeFromState) {
       setNotice(noticeFromState);
       toast.success(noticeFromState);
@@ -21,21 +23,45 @@ const VerifyOtp: React.FC = () => {
         navigate(location.pathname + location.search, { replace: true, state: null });
       }, 0);
     }
+
     const params = new URLSearchParams(location.search);
+    const queryFlow = params.get("flow");
+    const resolvedFlow = state?.flow === "signup" || queryFlow === "signup" ? "signup" : "reset";
+    setFlow(resolvedFlow);
+
     const emailParam = params.get("email");
     if (emailParam) {
       setEmail(emailParam);
       localStorage.setItem("otp_email", emailParam);
       return;
     }
+
     const storedEmail = localStorage.getItem("otp_email");
     if (!storedEmail) {
       toast.error("Email missing. Redirecting to reset page...");
-      navigate("/forget-password");
+      navigate(resolvedFlow === "signup" ? "/register" : "/forget-password");
     } else {
       setEmail(storedEmail);
     }
-  }, [location.search, navigate]);
+  }, [location.pathname, location.search, location.state, navigate]);
+
+  const handleResendOtp = async () => {
+    if (!email) {
+      toast.error("Email missing. Please go back and try again.");
+      return;
+    }
+    try {
+      const response = await axiosInstance.post("/send-otp", {
+        email,
+        purpose: flow === "signup" ? "signup" : "password_reset",
+      });
+      const msg = response.data?.message || "OTP sent successfully";
+      toast.success(msg);
+    } catch (error: any) {
+      const msg = error?.response?.data?.message || "Failed to resend OTP";
+      toast.error(msg);
+    }
+  };
 
   const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,18 +69,69 @@ const VerifyOtp: React.FC = () => {
     if (!email) return toast.error("Email missing. Go back and try again.");
 
     try {
-      const response = await axiosInstance.post("/otp-verify", { email, OTP });
+      const response = await axiosInstance.post("/otp-verify", {
+        email,
+        OTP,
+        purpose: flow === "signup" ? "signup" : "password_reset",
+      });
       const { status, message } = response.data;
 
       if (status === "success") {
         const notice = message || "OTP verified!";
         toast.success(notice);
-        localStorage.removeItem("otp_email");
 
-        navigate("/set-password", {
-          state: { email, OTP, notice },
-          replace: true,
-        });
+        if (flow === "signup") {
+          const pendingRaw = sessionStorage.getItem("signup_pending_payload");
+          if (!pendingRaw) {
+            toast.error("Signup details missing. Please register again.");
+            navigate("/register", { replace: true });
+            return;
+          }
+
+          let pendingPayload: {
+            name: string;
+            email: string;
+            password: string;
+            auth: string;
+          } | null = null;
+          try {
+            pendingPayload = JSON.parse(pendingRaw);
+          } catch {
+            pendingPayload = null;
+          }
+
+          if (!pendingPayload?.name || !pendingPayload?.email || !pendingPayload?.password) {
+            toast.error("Signup details are invalid. Please register again.");
+            sessionStorage.removeItem("signup_pending_payload");
+            navigate("/register", { replace: true });
+            return;
+          }
+
+          const registerResponse = await axiosInstance.post("/authRegistration", {
+            ...pendingPayload,
+            OTP,
+          });
+
+          if (registerResponse.status === 201) {
+            const successMessage =
+              registerResponse.data?.message || "Registration successful!";
+            sessionStorage.removeItem("signup_pending_payload");
+            localStorage.removeItem("otp_email");
+            toast.success(successMessage);
+            navigate("/login", {
+              replace: true,
+              state: { registered: true, message: successMessage },
+            });
+            return;
+          }
+        } else {
+          localStorage.removeItem("otp_email");
+          navigate("/set-password", {
+            state: { email, OTP, notice },
+            replace: true,
+          });
+          return;
+        }
       } else {
         toast.error(message || "Invalid OTP.");
       }
@@ -69,11 +146,11 @@ const VerifyOtp: React.FC = () => {
       <div className="login-fullscreen-container">
         <div className="login-left-section">
           <div className="auth-card">
-            <h2>Verify OTP</h2>
+            <h2>{flow === "signup" ? "Verify Signup OTP" : "Verify OTP"}</h2>
             <p className="text-center">An OTP has been sent to:</p>
             <div className="email-display">
               <h6>{email || "No email found"}</h6>
-              <Link to="/forget-password" className="change-link">
+              <Link to={flow === "signup" ? "/register" : "/forget-password"} className="change-link">
                 Change
               </Link>
             </div>
@@ -99,7 +176,9 @@ const VerifyOtp: React.FC = () => {
               </button>
             </form>
 
-            <p className="login-link">Resend OTP</p>
+            <p className="login-link" style={{ cursor: "pointer" }} onClick={handleResendOtp}>
+              Resend OTP
+            </p>
           </div>
         </div>
         <div className="login-right-section">

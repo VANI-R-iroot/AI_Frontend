@@ -6,7 +6,7 @@ import { TbEdit } from "react-icons/tb";
 import { AiFillDelete, AiFillStar, AiOutlineStar } from "react-icons/ai";
 import { useAdminPermissions } from "../../utils/useAdminPermissions";
 import ModuleAccessDenied from "../../components/common/ModuleAccessDenied";
-import { FaSearch, FaClock, FaCheckCircle, FaTimesCircle } from "react-icons/fa";
+import { FaSearch, FaClock } from "react-icons/fa";
 import axiosInstance from "../../utils/baseUrl";
 import { format } from "date-fns";
 import DeleteConfirmModel from "../../common/DeleteConfirmModal";
