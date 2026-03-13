@@ -5,6 +5,7 @@ import axiosInstance from "../../../utils/baseUrl";
 import HomeNavbar from "../../../common/HomeNavbar";
 import images from "../../../assets/image/Home-02/AllIamge";
 import imgeRight from "../../../assets/image/Home-02/authPages/Thumbnail.png";
+import { getPasswordPolicyError } from "../../../utils/passwordPolicy";
 
 const SetNewPassword: React.FC = () => {
   const location = useLocation();
@@ -37,6 +38,8 @@ const SetNewPassword: React.FC = () => {
       return toast.error("All fields are required");
     if (password !== confirmPassword)
       return toast.error("Passwords do not match");
+    const passwordPolicyError = getPasswordPolicyError(password);
+    if (passwordPolicyError) return toast.error(passwordPolicyError);
 
     try {
       const response = await axiosInstance.post("/recover-password", {

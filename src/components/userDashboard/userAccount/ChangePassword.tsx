@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { toast } from "react-toastify";
 import { Eye, EyeOff } from "lucide-react";
 import axiosInstance from "../../../utils/baseUrl";
+import { getPasswordPolicyError } from "../../../utils/passwordPolicy";
 
 const ChangePassword: React.FC = () => {
   const [passwordData, setPasswordData] = useState({
@@ -55,9 +56,12 @@ const ChangePassword: React.FC = () => {
     if (!passwordData.newPassword) {
       newErrors.newPassword = "New password is required";
       isValid = false;
-    } else if (passwordData.newPassword.length < 8) {
-      newErrors.newPassword = "Password must be at least 8 characters";
-      isValid = false;
+    } else {
+      const passwordPolicyError = getPasswordPolicyError(passwordData.newPassword);
+      if (passwordPolicyError) {
+        newErrors.newPassword = passwordPolicyError;
+        isValid = false;
+      }
     }
 
     if (passwordData.newPassword !== passwordData.confirmPassword) {

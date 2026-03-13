@@ -8,6 +8,10 @@ import { useGoogleLogin } from "@react-oauth/google";
 import { useAuth } from "../../../../context/AuthContext";
 import { useUserStore } from "../../../../zustand/userDetailsStore";
 import { updateSessionUser } from "../../../../utils/userSession";
+import {
+  getPasswordPolicyError,
+  PASSWORD_POLICY_MESSAGE,
+} from "../../../../utils/passwordPolicy";
 
 const RegisterPage: React.FC = () => {
   const navigate = useNavigate();
@@ -22,6 +26,8 @@ const RegisterPage: React.FC = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [passwordError, setPasswordError] = useState("");
+  const [confirmPasswordError, setConfirmPasswordError] = useState("");
   const auth = "user";
 
   const showLoginErrorToast = (
@@ -57,33 +63,47 @@ const RegisterPage: React.FC = () => {
     if (!password.trim()) return toast.error("Password is required");
     if (!confirmPassword.trim())
       return toast.error("Confirm password is required");
-    if (password !== confirmPassword)
+    if (password !== confirmPassword) {
+      setConfirmPasswordError("Passwords do not match");
       return toast.error("Passwords do not match");
+    }
+    setConfirmPasswordError("");
+    const passwordPolicyError = getPasswordPolicyError(password);
+    if (passwordPolicyError) {
+      setPasswordError(passwordPolicyError);
+      return toast.error(passwordPolicyError);
+    }
 
     try {
       const normalizedEmail = email.trim().toLowerCase();
       const normalizedName = fullName.trim();
-      const response = await axiosInstance.post("/authRegistration", {
-        name: normalizedName,
+      const response = await axiosInstance.post("/send-otp", {
         email: normalizedEmail,
-        password,
-        auth,
+        purpose: "signup",
       });
 
-      if (response.status === 201) {
-        const successMessage =
-          response.data?.message || "Registration successful!";
-        toast.success(successMessage);
-        setFullName("");
-        setEmail("");
-        setPassword("");
-        setConfirmPassword("");
+      if (response.status === 200 && response.data?.status === "success") {
+        const notice = response.data?.message || "OTP sent successfully";
+        sessionStorage.setItem(
+          "signup_pending_payload",
+          JSON.stringify({
+            name: normalizedName,
+            email: normalizedEmail,
+            password,
+            auth,
+          })
+        );
+        localStorage.setItem("otp_email", normalizedEmail);
 
+        toast.success(notice);
         setTimeout(() => {
-          navigate("/login", {
-            state: { registered: true, message: successMessage },
+          navigate(`/verify-Otp?email=${encodeURIComponent(normalizedEmail)}&flow=signup`, {
+            replace: true,
+            state: { notice, flow: "signup" },
           });
-        }, 1500);
+        }, 500);
+      } else {
+        toast.error(response.data?.message || "Failed to send OTP.");
       }
     } catch (error: any) {
       console.error("Registration Error:", error);
@@ -251,7 +271,19 @@ const RegisterPage: React.FC = () => {
                     id="password"
                     placeholder="Password"
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={(e) => {
+                      const next = e.target.value;
+                      setPassword(next);
+                      const nextError = next
+                        ? getPasswordPolicyError(next) || ""
+                        : "";
+                      setPasswordError(nextError);
+                      if (confirmPassword) {
+                        setConfirmPasswordError(
+                          next === confirmPassword ? "" : "Passwords do not match"
+                        );
+                      }
+                    }}
                   />
                   <div
                     className="input-icon"
@@ -265,6 +297,30 @@ const RegisterPage: React.FC = () => {
                     />
                   </div>
                 </div>
+                <small
+                  style={{
+                    display: "block",
+                    marginTop: "6px",
+                    color: "#6b7280",
+                    fontSize: "12px",
+                    lineHeight: 1.4,
+                  }}
+                >
+                  {PASSWORD_POLICY_MESSAGE}
+                </small>
+                {passwordError ? (
+                  <small
+                    style={{
+                      display: "block",
+                      marginTop: "4px",
+                      color: "#ef4444",
+                      fontSize: "12px",
+                      lineHeight: 1.4,
+                    }}
+                  >
+                    {passwordError}
+                  </small>
+                ) : null}
               </div>
 
               <div className="form-group">
@@ -275,7 +331,13 @@ const RegisterPage: React.FC = () => {
                     id="confirm-password"
                     placeholder="Confirm Password"
                     value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    onChange={(e) => {
+                      const next = e.target.value;
+                      setConfirmPassword(next);
+                      setConfirmPasswordError(
+                        next && password !== next ? "Passwords do not match" : ""
+                      );
+                    }}
                   />
                   <div
                     className="input-icon"
@@ -289,6 +351,19 @@ const RegisterPage: React.FC = () => {
                     />
                   </div>
                 </div>
+                {confirmPasswordError ? (
+                  <small
+                    style={{
+                      display: "block",
+                      marginTop: "4px",
+                      color: "#ef4444",
+                      fontSize: "12px",
+                      lineHeight: 1.4,
+                    }}
+                  >
+                    {confirmPasswordError}
+                  </small>
+                ) : null}
               </div>
 
               <button type="submit" className="btn-signup">

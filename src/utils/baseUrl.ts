@@ -1,8 +1,11 @@
 import axios from "axios";
 
+const apiBaseUrl =
+  import.meta.env.VITE_API_BASE_URL?.trim() || "http://localhost:8080/v3";
+
 // Create axios instance with default config - KEEP YOUR EXISTING CONFIG
 const axiosInstance = axios.create({
-  baseURL: "http://localhost:8080/v3",
+  baseURL: apiBaseUrl,
   withCredentials: true, 
   timeout: 30000,
   headers: {

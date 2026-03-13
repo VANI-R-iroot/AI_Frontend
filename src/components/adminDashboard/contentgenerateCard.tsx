@@ -17,20 +17,23 @@ import {
 import useTrackingStore from "../../zustand/useTrackingStore";
 import { useState } from "react";
 
-const contentData = [
-  { month: "Jan", word: 20000, image: 15000 },
-  { month: "Feb", word: 15000, image: 18000 },
-  { month: "Mar", word: 18000, image: 19000 },
-  { month: "Apr", word: 22000, image: 20000 },
-  { month: "May", word: 43000, image: 30000 },
-  { month: "Jun", word: 17000, image: 19000 },
-  { month: "Jul", word: 20000, image: 18000 },
-  { month: "Aug", word: 12000, image: 10000 },
-  { month: "Sep", word: 22000, image: 15000 },
-  { month: "Oct", word: 26000, image: 17000 },
-  { month: "Nov", word: 15000, image: 13000 },
-  { month: "Dec", word: 22000, image: 16000 },
-];
+type ContentSeriesPoint = {
+  month: string;
+  word: number;
+  image: number;
+};
+
+type ContentGeneratedPayload = {
+  series?: ContentSeriesPoint[];
+  current?: {
+    word?: number;
+    image?: number;
+  };
+};
+
+type CountryContentDashboardProps = {
+  contentGenerated?: ContentGeneratedPayload;
+};
 
 const CustomContentTooltip = ({
   active,
@@ -51,7 +54,7 @@ const CustomContentTooltip = ({
       <div className="content-tooltip">
         <p className="month-label">{label}</p>
         <div className="tooltip-revenue">
-          <span className="tooltip-dot">‚óè</span>
+          <span className="tooltip-dot">ï</span>
           Total: {total.toLocaleString()}
         </div>
       </div>
@@ -60,9 +63,15 @@ const CustomContentTooltip = ({
   return null;
 };
 
-export default function CountryContentDashboard() {
+export default function CountryContentDashboard({
+  contentGenerated,
+}: CountryContentDashboardProps) {
   const trackingData = useTrackingStore((state) => state.trackingData);
   const [selectedTimeFilter, setSelectedTimeFilter] = useState("all time");
+  const contentData = contentGenerated?.series || [];
+  const currentWord = Number(contentGenerated?.current?.word || 0);
+  const currentImage = Number(contentGenerated?.current?.image || 0);
+
   const isDateInPeriod = (dateStr: string, period: string): boolean => {
     if (period === "all time") return true;
 
@@ -249,7 +258,6 @@ export default function CountryContentDashboard() {
         </div>
       </div>
 
-      {/* Content Section */}
       <div className="sm-12 col-md-12 col-lg-12 col-xl-6 col-xxl-6">
         <div className="content-section">
           <div className="visitor-section-header ">
@@ -264,14 +272,14 @@ export default function CountryContentDashboard() {
 
           <div className="content-legend">
             <div className="admin-legend-item">
-              <h6>Word: 500</h6>
+              <h6>Word: {currentWord.toLocaleString("en-US")}</h6>
               <div
                 className="legend-dot"
                 style={{ backgroundColor: "#3182ce" }}
               ></div>
             </div>
             <div className="admin-legend-item">
-              <h6>Image: 500</h6>
+              <h6>Image: {currentImage.toLocaleString("en-US")}</h6>
               <div
                 className="legend-dot"
                 style={{ backgroundColor: "#ed8936" }}

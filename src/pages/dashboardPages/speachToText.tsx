@@ -26,7 +26,6 @@ const AiSpeechToTextPage = () => {
   const { packageLimitData } = packageStore();
   const { limitData } = limitStore();
   const [activeTab, setActiveTab] = useState("Results");
-  const [selectedFile, setSelectedFile] = useState<string | null>(null);
   const [description, setDescription] = useState("");
   const [language, setLanguage] = useState("");
   const [audioFile, setAudioFile] = useState<File | null>(null);
@@ -159,14 +158,6 @@ useEffect(() => {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const handleFileSelect = (fileId: string) => {
-    setSelectedFile(fileId);
-    const selected = imgToTextData.find((f) => f._id === fileId);
-    setResultText(selected?.transcript || "");
-    setEditMode(false);
-    setActiveTab("Results");
   };
 
   const handleCopyText = () => {

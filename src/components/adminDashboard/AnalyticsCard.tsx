@@ -1,6 +1,19 @@
-import React, { useState } from "react";
+import React from "react";
 import { FaUsers, FaUserAlt, FaWallet, FaReceipt } from "react-icons/fa";
 import { RiVipCrownFill } from "react-icons/ri";
+
+type DashboardCards = {
+  totalUsers?: number;
+  users30d?: number;
+  totalSubscriptions?: number;
+  subscriptions30d?: number;
+  totalFreeUsers?: number;
+  freeUsers30d?: number;
+  totalIncome?: number;
+  income30d?: number;
+  totalExpense?: number;
+  expense30d?: number;
+};
 
 interface CardData {
   title: string;
@@ -14,64 +27,98 @@ interface CardData {
   };
 }
 
-export default function Dashboard() {
-  const [cardData] = useState<CardData[]>([
+type DashboardProps = {
+  cards?: DashboardCards;
+};
+
+const formatNumber = (value: number) => value.toLocaleString("en-US");
+const formatMoney = (value: number) =>
+  value.toLocaleString("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
+
+const buildTrend = (amount: number, suffix: string) => {
+  const isPositive = amount >= 0;
+  const absValue = Math.abs(amount);
+  return {
+    value: `${isPositive ? "+" : "-"}${suffix === "money" ? formatMoney(absValue) : formatNumber(absValue)}`,
+    isPositive,
+  };
+};
+
+export default function Dashboard({ cards }: DashboardProps) {
+  const totalUsers = Number(cards?.totalUsers || 0);
+  const users30d = Number(cards?.users30d || 0);
+  const totalSubscriptions = Number(cards?.totalSubscriptions || 0);
+  const subscriptions30d = Number(cards?.subscriptions30d || 0);
+  const totalFreeUsers = Number(cards?.totalFreeUsers || 0);
+  const freeUsers30d = Number(cards?.freeUsers30d || 0);
+  const totalIncome = Number(cards?.totalIncome || 0);
+  const income30d = Number(cards?.income30d || 0);
+  const totalExpense = Number(cards?.totalExpense || 0);
+  const expense30d = Number(cards?.expense30d || 0);
+
+  const usersTrend = buildTrend(users30d, "count");
+  const subsTrend = buildTrend(subscriptions30d, "count");
+  const freeTrend = buildTrend(freeUsers30d, "count");
+  const incomeTrend = buildTrend(income30d, "money");
+  const expenseTrend = buildTrend(expense30d, "money");
+
+  const cardData: CardData[] = [
     {
       title: "Total Users",
-      value: "20,000",
+      value: formatNumber(totalUsers),
       icon: <FaUsers size={20} />,
       iconBgColor: "#0bc5ea",
       trend: {
-        value: "+5000",
-        isPositive: true,
+        value: usersTrend.value,
+        isPositive: usersTrend.isPositive,
         text: "Last 30 days users",
       },
     },
     {
       title: "Total Subscription",
-      value: "15,000",
+      value: formatNumber(totalSubscriptions),
       icon: <RiVipCrownFill size={20} />,
       iconBgColor: "#805ad5",
       trend: {
-        value: "-800",
-        isPositive: false,
+        value: subsTrend.value,
+        isPositive: subsTrend.isPositive,
         text: "Last 30 days subscription",
       },
     },
     {
       title: "Total Free Users",
-      value: "5,000",
+      value: formatNumber(totalFreeUsers),
       icon: <FaUserAlt size={20} />,
       iconBgColor: "#0bc5ea",
       trend: {
-        value: "+200",
-        isPositive: true,
+        value: freeTrend.value,
+        isPositive: freeTrend.isPositive,
         text: "Last 30 days users",
       },
     },
     {
       title: "Total Income",
-      value: "$42,000",
+      value: formatMoney(totalIncome),
       icon: <FaWallet size={20} />,
       iconBgColor: "#48bb78",
       trend: {
-        value: "+$20,000",
-        isPositive: true,
+        value: incomeTrend.value,
+        isPositive: incomeTrend.isPositive,
         text: "Last 30 days income",
       },
     },
     {
       title: "Total Expense",
-      value: "$30,000",
+      value: formatMoney(totalExpense),
       icon: <FaReceipt size={20} />,
       iconBgColor: "#f56565",
       trend: {
-        value: "+$5,000",
-        isPositive: true,
+        value: expenseTrend.value,
+        isPositive: expenseTrend.isPositive,
         text: "Last 30 days expense",
       },
     },
-  ]);
+  ];
 
   return (
     <>
